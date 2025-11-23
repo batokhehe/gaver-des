@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:gaver_des/home_view.dart';
+import 'package:gaver_des/views/login_view.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -32,11 +32,10 @@ class _SplashViewState extends State<SplashView>
 
     _fadeController.forward();
 
-    // Auto redirect ke Home
     Timer(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomeView()),
+        MaterialPageRoute(builder: (_) => const LoginView()),
       );
     });
   }
