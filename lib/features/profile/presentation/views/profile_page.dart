@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../widgets/logout_button.dart';
+import 'history_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -15,7 +17,7 @@ class ProfilePage extends StatelessWidget {
           children: [
             _buildHeader(),
             _buildProfileCard(),
-            _buildDeliveryCard(),
+            _buildDeliveryCard(context),
             const SizedBox(height: 24),
             _buildSectionTitle("Informasi Akun"),
             const SizedBox(height: 8),
@@ -32,7 +34,7 @@ class ProfilePage extends StatelessWidget {
             _infoItem("assets/icons/ic_building.png", "Bekasi", "Base area"),
             _infoItem("assets/icons/ic_building.png", "Bekasi", "Base area"),
             const SizedBox(height: 30),
-            _logoutButton(),
+            const LogoutButton(),
             const SizedBox(height: 30),
           ],
         ),
@@ -138,8 +140,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // PENGIRIMAN CARD
-  Widget _buildDeliveryCard() {
+  Widget _buildDeliveryCard(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
@@ -181,16 +182,23 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
           Row(
-            children: const [
-              Text(
-                "Riwayat",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const HistoryPage()),
+                  );
+                },
+                child: const Text(
+                  "Riwayat",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
-              SizedBox(width: 4),
-              Icon(Icons.chevron_right, size: 22),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right, size: 22),
             ],
           ),
         ],
@@ -249,29 +257,6 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // LOGOUT BUTTON
-  Widget _logoutButton() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      width: double.infinity,
-      height: 48,
-      decoration: BoxDecoration(
-        color: const Color(0xFFD55A24),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Center(
-        child: Text(
-          "Log Out",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-          ),
-        ),
       ),
     );
   }

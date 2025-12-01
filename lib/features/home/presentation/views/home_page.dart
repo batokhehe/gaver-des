@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
 
+import '../widgets/bottom_nav.dart';
 import '../widgets/daily_recap_section.dart';
 import '../widgets/header_section.dart';
 import '../widgets/job_active_card.dart';
@@ -55,7 +56,7 @@ class HomePage extends StatelessWidget {
                   children: [
                     sectionTitle("Pekerjaan Aktif"),
                     hasActiveJob
-                        ? const JobActiveCard(job: null)
+                        ? JobActiveCard(job: null)
                         : const JobEmptyCard(),
                     const SizedBox(height: 16),
 

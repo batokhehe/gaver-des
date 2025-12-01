@@ -49,7 +49,10 @@ class _TaskPageState extends State<TaskPage> {
           padding: const EdgeInsets.fromLTRB(16, 54, 16, 0),
           child: Row(
             children: [
-              Icon(Icons.arrow_back, color: Colors.white),
+              GestureDetector(
+                onTap: () {},
+                child: Icon(Icons.arrow_back, color: Colors.white),
+              ),
               SizedBox(width: 12),
               Text(
                 "Daftar Tugas",

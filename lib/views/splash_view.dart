@@ -32,11 +32,13 @@ class _SplashViewState extends State<SplashView>
 
     _fadeController.forward();
 
-    Timer(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginView()),
-      );
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginView()),
+        );
+      }
     });
   }
 

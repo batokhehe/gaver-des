@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gaver_des/features/home/domain/entities/job.dart';
+import 'package:gaver_des/features/home/presentation/widgets/task_info_bottom_sheet.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import 'bottom_nav.dart';
 
 class JobActiveCard extends StatelessWidget {
   const JobActiveCard({super.key, required Job? job});
@@ -42,7 +44,7 @@ class JobActiveCard extends StatelessWidget {
               ],
             ),
           ),
-          const JobActiveDetail(),
+          JobActiveDetail(),
         ],
       ),
     );
@@ -107,21 +109,43 @@ class JobActiveDetail extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: AppColors.primaryDark,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.arrow_forward,
-              color: Colors.white,
-              size: 16,
+          GestureDetector(
+            onTap: () => _showTaskInfoDialog(context),
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: const BoxDecoration(
+                color: AppColors.primaryDark,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward,
+                color: Colors.white,
+                size: 16,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showTaskInfoDialog(BuildContext context) {
+    final bottomNav = context.findAncestorStateOfType<BottomNavState>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) {
+        return TaskInfoBottomSheet(
+          onGoToTask: () async {
+            Navigator.pop(bottomSheetContext);
+            await Future.delayed(Duration(milliseconds: 80));
+            bottomNav?.changeTab(1);
+          },
+        );
+      },
     );
   }
 }

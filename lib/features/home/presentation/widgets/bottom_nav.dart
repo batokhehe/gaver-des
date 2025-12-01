@@ -9,10 +9,10 @@ class BottomNav extends StatefulWidget {
   const BottomNav({super.key});
 
   @override
-  State<BottomNav> createState() => _BottomNavState();
+  State<BottomNav> createState() => BottomNavState();
 }
 
-class _BottomNavState extends State<BottomNav> {
+class BottomNavState extends State<BottomNav> {
   int currentIndex = 0;
 
   final pages = const [
@@ -22,19 +22,20 @@ class _BottomNavState extends State<BottomNav> {
     ProfilePage(),
   ];
 
+  void changeTab(int index) {
+    setState(() => currentIndex = index);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: pages[currentIndex],
-
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
-        onTap: (index) {
-          setState(() => currentIndex = index);
-        },
-        type: BottomNavigationBarType.fixed,
+        onTap: (index) => changeTab(index),
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: ImageIcon(AssetImage('assets/icons/ic_home.png')),

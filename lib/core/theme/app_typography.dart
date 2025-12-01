@@ -20,6 +20,11 @@ class AppTypography {
   static const smallNormalBlack = TextStyle(fontSize: 14, color: Colors.black);
   static const xSmallNormalBlack = TextStyle(fontSize: 12, color: Colors.black);
 
+  static const mediumBoldWhite = TextStyle(
+    fontSize: 16,
+    color: Colors.black,
+    fontWeight: FontWeight.bold,
+  );
   static const smallBoldWhite = TextStyle(
     fontSize: 14,
     color: Colors.white,
