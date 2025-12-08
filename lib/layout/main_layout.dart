@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../features/home/presentation/views/home_page.dart';
+import '../features/home/presentation/views/dashboard_page.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -13,7 +13,7 @@ class _MainLayoutState extends State<MainLayout> {
   int index = 0;
 
   final pages = [
-    HomePage(),
+    DashboardPage(),
     Placeholder(), // Tugas
     Placeholder(), // Notif
     Placeholder(), // Profile

@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 
 class HeaderSection extends StatelessWidget {
+  final String header;
+  final String subHeader;
+  final bool isTransparent;
+
   const HeaderSection({
     super.key,
-    required String userName,
-    required bool isTransparent,
+    required this.header,
+    required this.subHeader,
+    required this.isTransparent,
   });
 
   @override
@@ -16,11 +21,11 @@ class HeaderSection extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hallo, Aditya Putra Rizki!',
+                header,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.white,
@@ -29,7 +34,7 @@ class HeaderSection extends StatelessWidget {
               ),
               SizedBox(height: 4),
               Text(
-                'Anda memiliki 1 tugas aktif hari ini',
+                subHeader,
                 style: TextStyle(color: Colors.white, fontSize: 14),
               ),
             ],

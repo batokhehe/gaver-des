@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../auth/providers/auth_provider.dart';
+import 'package:go_router/go_router.dart';
 
-class LogoutBottomSheet extends StatelessWidget {
+class LogoutBottomSheet extends ConsumerWidget {
   const LogoutBottomSheet({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
@@ -16,7 +18,7 @@ class LogoutBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Close button (X)
+          // TITLE & CLOSE BUTTON
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -24,25 +26,23 @@ class LogoutBottomSheet extends StatelessWidget {
                 "Konfirmasi",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
-
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: const Icon(Icons.close, size: 24),
               ),
             ],
           ),
+
           const SizedBox(height: 20),
           Image.asset("assets/images/logout.png", width: 120, height: 120),
           const SizedBox(height: 16),
 
-          // Title
           const Text(
             "Yakin Keluar Aplikasi?",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
 
-          // Description
           const Text(
             "Sesi akan diakhiri. Tapi anda bisa masuk kembali kapan saja!",
             textAlign: TextAlign.center,
@@ -51,9 +51,9 @@ class LogoutBottomSheet extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Buttons
           Row(
             children: [
+              // CANCEL BUTTON
               Expanded(
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
@@ -68,13 +68,16 @@ class LogoutBottomSheet extends StatelessWidget {
                   child: const Text(
                     "Batal",
                     style: TextStyle(
-                      color: Color(0xFFD55A24), // orange
+                      color: Color(0xFFD55A24),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ),
+
               const SizedBox(width: 12),
+
+              // LOGOUT BUTTON
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -84,14 +87,21 @@ class LogoutBottomSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     Navigator.pop(context);
+
+                    await ref.read(logoutProvider)();
+                    context.go('/login');
                   },
-                  child: Text("Keluar Sekarang", style: AppTypography.smallBoldWhite),
+                  child: Text(
+                    "Keluar Sekarang",
+                    style: AppTypography.smallBoldWhite,
+                  ),
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: 10),
         ],
       ),

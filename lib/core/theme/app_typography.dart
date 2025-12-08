@@ -42,4 +42,9 @@ class AppTypography {
     color: AppColors.primaryDark,
     fontWeight: FontWeight.bold,
   );
+
+  static const xSmallNormalGrey = TextStyle(
+    fontSize: 14,
+    color: AppColors.grey2,
+  );
 }

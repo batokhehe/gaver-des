@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gaver_des/features/task/presentation/widgets/task_card.dart';
 
 import '../../../../core/theme/app_typography.dart';
+import '../../../pick_up/presentation/views/pick_up_page.dart';
 import '../../data/models/task_item.dart';
 
 class TaskInfoBottomSheet extends StatelessWidget {
@@ -93,7 +94,10 @@ class TaskInfoBottomSheet extends StatelessWidget {
 
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => PickUp()),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD55A24),
                     padding: const EdgeInsets.symmetric(vertical: 14),

@@ -1,16 +1,16 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:gaver_des/views/login_view.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../app/router.dart'; // pastikan path benar
 
-class SplashView extends StatefulWidget {
-  const SplashView({super.key});
+class SplashPage extends ConsumerStatefulWidget {
+  const SplashPage({super.key});
 
   @override
-  State<SplashView> createState() => _SplashViewState();
+  ConsumerState<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashViewState extends State<SplashView>
+class _SplashPageState extends ConsumerState<SplashPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -19,7 +19,12 @@ class _SplashViewState extends State<SplashView>
   void initState() {
     super.initState();
 
-    // Fade-in animation
+    // Tandai SPLASH sudah pernah ditampilkan
+    Future.microtask(() {
+      ref.read(hasShownSplashProvider.notifier).state = true;
+    });
+
+    // Fade Animation
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -32,13 +37,9 @@ class _SplashViewState extends State<SplashView>
 
     _fadeController.forward();
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginView()),
-        );
-      }
+    // Tidak perlu Navigator → Router akan redirect otomatis
+    Timer(const Duration(seconds: 2), () {
+      // biarkan router redirect sendiri
     });
   }
 
@@ -61,8 +62,6 @@ class _SplashViewState extends State<SplashView>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Kalau mau logo kecil di tengah, bisa tambahkan
-                  // Image.asset("assets/logo.png", width: 120),
                   const SizedBox(height: 200),
                   Text(
                     "GaVer 1.0.0",

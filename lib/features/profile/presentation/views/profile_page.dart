@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gaver_des/features/profile/presentation/views/change_password_view.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -32,7 +33,12 @@ class ProfilePage extends StatelessWidget {
               "Nomor Handphone",
             ),
             _infoItem("assets/icons/ic_building.png", "Bekasi", "Base area"),
-            _infoItem("assets/icons/ic_building.png", "Bekasi", "Base area"),
+            _changePassword(
+              "assets/icons/ic_building.png",
+              "Kata Sandi",
+              "Perbarui kata sandi",
+              context,
+            ),
             const SizedBox(height: 30),
             const LogoutButton(),
             const SizedBox(height: 30),
@@ -253,6 +259,99 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(label, style: const TextStyle(color: Colors.black54)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _changePassword(
+    String image,
+    String value,
+    String label,
+    BuildContext context,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF1E9),
+              shape: BoxShape.circle,
+            ),
+            child: Image.asset(
+              image,
+              width: 20,
+              height: 20,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            value,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            label,
+                            style: const TextStyle(color: Colors.black54),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChangePasswordView(),
+                              ),
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              Text(
+                                "Ganti",
+                                style: const TextStyle(color: Colors.black54),
+                              ),
+                              const SizedBox(width: 4),
+                              Image.asset(
+                                "assets/icons/ic_arrow_right.png",
+                                width: 16,
+                                height: 16,
+                                fit: BoxFit.contain,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

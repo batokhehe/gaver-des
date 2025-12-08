@@ -4,7 +4,7 @@ import 'package:gaver_des/features/home/presentation/widgets/task_info_bottom_sh
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import 'bottom_nav.dart';
+import '../views/home_page.dart';
 
 class JobActiveCard extends StatelessWidget {
   const JobActiveCard({super.key, required Job? job});
@@ -131,7 +131,7 @@ class JobActiveDetail extends StatelessWidget {
   }
 
   void _showTaskInfoDialog(BuildContext context) {
-    final bottomNav = context.findAncestorStateOfType<BottomNavState>();
+    final bottomNav = context.findAncestorStateOfType<HomePageState>();
 
     showModalBottomSheet(
       context: context,
