@@ -60,12 +60,12 @@ class TaskInfoBottomSheet extends StatelessWidget {
               item: task.item,
               vendor: task.vendor,
               address: task.address,
+              isShowBottomNext: true,
             ),
           ),
 
           const SizedBox(height: 24),
 
-          // BUTTONS
           Row(
             children: [
               Expanded(

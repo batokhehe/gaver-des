@@ -10,6 +10,7 @@ class TaskCard extends StatelessWidget {
   final int item;
   final String vendor;
   final String address;
+  final bool isShowBottomNext;
 
   const TaskCard({
     super.key,
@@ -20,6 +21,7 @@ class TaskCard extends StatelessWidget {
     required this.item,
     required this.vendor,
     required this.address,
+    required this.isShowBottomNext,
   });
 
   @override
@@ -109,17 +111,19 @@ class TaskCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Image.asset(
-                    "assets/icons/ic_arrow_forward.png",
-                    width: 42,
-                    height: 42,
-                    fit: BoxFit.contain,
-                  ),
-                ],
-              ),
+              isShowBottomNext
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Image.asset(
+                          "assets/icons/ic_arrow_forward.png",
+                          width: 42,
+                          height: 42,
+                          fit: BoxFit.contain,
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
             ],
           ),
         ],

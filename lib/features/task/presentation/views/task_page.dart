@@ -128,6 +128,7 @@ class _TaskPageState extends State<TaskPage> {
           item: 3,
           vendor: "UD. Cahaya Ekspres",
           address: "Jl. Merdeka Timur No. 88, Jakarta Pusat",
+          isShowBottomNext: true,
         ),
         TaskCard(
           code: "PKO.2025.11.0003",
@@ -137,6 +138,7 @@ class _TaskPageState extends State<TaskPage> {
           item: 10,
           vendor: "Toko Andalan Sejahtera",
           address: "Jl. Raya Cikunir No. 45, Bekasi, Jakarta",
+          isShowBottomNext: true,
         ),
         TaskCard(
           code: "DO.2025.11.0002",
@@ -146,6 +148,7 @@ class _TaskPageState extends State<TaskPage> {
           item: 3,
           vendor: "Toko Andalan Sejahtera",
           address: "Jl. Gatot Subroto Blok B3 No. 12, Jakarta Selatan",
+          isShowBottomNext: true,
         ),
       ],
     );

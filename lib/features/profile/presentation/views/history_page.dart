@@ -292,6 +292,7 @@ class _HistoryPageState extends State<HistoryPage> {
             item: task.item,
             vendor: task.vendor,
             address: task.address,
+            isShowBottomNext: true,
           );
         }),
       ],
@@ -322,6 +323,7 @@ class _HistoryPageState extends State<HistoryPage> {
             item: data["item"],
             vendor: data["vendor"],
             address: data["address"],
+            isShowBottomNext: true,
           ),
         ],
       ),

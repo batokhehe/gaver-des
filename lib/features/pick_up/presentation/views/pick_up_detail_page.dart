@@ -1,6 +1,13 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../task/presentation/widgets/task_card.dart';
+import '../../data/models/item_detail.dart';
+import '../widgets/add_item_bottom_sheet.dart';
+import '../widgets/item_card_with_checkbox.dart';
 
 class PickUpDetailPage extends StatefulWidget {
   const PickUpDetailPage({super.key});
@@ -10,6 +17,16 @@ class PickUpDetailPage extends StatefulWidget {
 }
 
 class _PickUpDetailPageState extends State<PickUpDetailPage> {
+  List<ItemDetail> items = [
+    ItemDetail(
+      name: "Minyak Goreng Kemasan 2L (Box 6 pcs)",
+      total: 12,
+      weight: 144,
+    ),
+    ItemDetail(name: "Tepung Terigu Premium 25kg", total: 8, weight: 200),
+    ItemDetail(name: "Air Mineral Galon 19L", total: 10, weight: 190),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,16 +106,37 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
 
               const SizedBox(height: 16),
 
-              // DAFTAR BARANG
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _sectionTitle("Daftar Barang"),
-                  Text(
-                    "+ Tambah Barang",
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
+                  ElevatedButton(
+                    onPressed: () async {
+                      final result = await AddItemBottomSheet.show(context);
+
+                      if (result != null) {
+                        setState(() {
+                          items.add(
+                            ItemDetail(
+                              name: result["name"],
+                              total: int.parse(result["total"]),
+                              weight: double.parse(result["weight"]),
+                            ),
+                          );
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: const Color(0xFFFFF1E9),
+                      padding: const EdgeInsets.all(8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      "+ Tambah Barang",
+                      style: AppTypography.xxSmallNormalPrimary,
                     ),
                   ),
                 ],
@@ -138,108 +176,43 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
     );
   }
 
-  // ----------------------------
-  // INFORMASI PENGIRIMAN CARD
-  // ----------------------------
   Widget _buildPickUpInfo() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            "PKO.2025.11.0002",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 4),
-          Text("Hub Jakarta Selatan"),
-          SizedBox(height: 8),
-          Divider(),
-          Text(
-            "Toko Andalan Sejahtera",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 4),
-          Text(
-            "Jl. Gatot Subroto Blok B3 No. 12, Jakarta Selatan, DKI Jakarta",
-          ),
-        ],
-      ),
+    return TaskCard(
+      code: "PKO.2025.11.0002",
+      hub: "Hub Jakarta Selatan",
+      status: "Pick up",
+      statusColor: Colors.orange,
+      item: 3,
+      vendor: "UD. Cahaya Ekspres",
+      address: "Jl. Merdeka Timur No. 88, Jakarta Pusat",
+      isShowBottomNext: false,
     );
   }
 
-  // ----------------------------
-  // LIST BARANG
-  // ----------------------------
   Widget _buildItemList() {
     return Column(
       children: [
-        _itemCard("Minyak Goreng Kemasan 2L (Box 6 pcs)", "12", "144"),
-        _itemCard("Tepung Terigu Premium 25kg", "8", "200"),
-        _itemCard("Air Mineral Galon 19L", "10", "190"),
+        for (int i = 0; i < items.length; i++)
+          ItemCardWithCheckbox(
+            name: items[i].name,
+            total: items[i].total.toString(),
+            weight: items[i].weight.toString(),
+            checked: items[i].checked,
+            onChecked: (value) {
+              setState(() {
+                items[i].checked = value;
+              });
+            },
+            onDelete: () {
+              setState(() {
+                items.removeAt(i);
+              });
+            },
+          ),
       ],
     );
   }
 
-  Widget _itemCard(String title, String koli, String kg) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              _qtyBox("Koli", koli),
-              const SizedBox(width: 10),
-              _qtyBox("Kg", kg),
-              const Spacer(),
-              const Icon(Icons.delete_outline, color: Colors.red),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _qtyBox(String label, String value) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 10)),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ----------------------------
-  // FORM SERAH TERIMA
-  // ----------------------------
   Widget _buildSerahTerimaForm() {
     return Column(
       children: [

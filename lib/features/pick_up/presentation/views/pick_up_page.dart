@@ -128,6 +128,7 @@ class _PickUpPageState extends State<PickUpPage> {
       item: 3,
       vendor: "UD. Cahaya Ekspres",
       address: "Jl. Merdeka Timur No. 88, Jakarta Pusat",
+      isShowBottomNext: true,
     );
   }
 
