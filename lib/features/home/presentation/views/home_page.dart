@@ -15,7 +15,7 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   int currentIndex = 0;
 
-  final pages = const [
+  final pages = [
     DashboardPage(),
     TaskPage(),
     NotificationPage(),

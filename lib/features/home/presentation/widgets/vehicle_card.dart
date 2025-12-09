@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class VehicleCard extends StatelessWidget {
-  const VehicleCard({super.key, required String vehicleName});
+  final String vehicleName;
+
+  const VehicleCard({super.key, required this.vehicleName});
 
   @override
   Widget build(BuildContext context) {
@@ -14,9 +16,9 @@ class VehicleCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
         ),
-        child: const Center(
+        child: Center(
           child: Text(
-            'B 1454 AC',
+            vehicleName,
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),

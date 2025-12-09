@@ -3,17 +3,18 @@ import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
 import 'package:gaver_des/features/pick_up/data/models/item.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/item_card.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../task/presentation/widgets/task_card.dart';
 
-class PickUp extends StatefulWidget {
-  const PickUp({super.key});
+class PickUpPage extends StatefulWidget {
+  const PickUpPage({super.key});
 
   @override
-  State<PickUp> createState() => _PickUpState();
+  State<PickUpPage> createState() => _PickUpPageState();
 }
 
-class _PickUpState extends State<PickUp> {
+class _PickUpPageState extends State<PickUpPage> {
   List<Item> items = [
     Item(
       code: "PKO.2025.11.0005",
@@ -46,6 +47,7 @@ class _PickUpState extends State<PickUp> {
     return Scaffold(
       backgroundColor: AppColors.greyBg,
       body: Column(children: [_buildHeader(), _buildInfo()]),
+      bottomNavigationBar: _buildBottomButton(),
     );
   }
 
@@ -147,6 +149,36 @@ class _PickUpState extends State<PickUp> {
           weight: task.weight,
         );
       },
+    );
+  }
+
+  Widget _buildBottomButton() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Colors.white,
+      child: SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryDark, // warna sesuai desain
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onPressed: () {
+            context.push('/pick-up-detail');
+          },
+          child: const Text(
+            "Mulai Tugas",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

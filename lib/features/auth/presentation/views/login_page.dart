@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gaver_des/features/home/presentation/views/home_page.dart';
+import 'package:gaver_des/core/widgets/error_dialog.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../providers/auth_provider.dart';
 import 'forgot_password_view.dart';
 
@@ -16,33 +17,37 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   final _email = TextEditingController();
   final _pass = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _passFocus = FocusNode();
   bool _obscure = true;
 
   void _doLogin() {
     final email = _email.text.trim();
     final pass = _pass.text.trim();
 
-    // ========== VALIDASI ==========
     if (email.isEmpty) {
-      _showError("Email tidak boleh kosong");
+      showError(context, "Email tidak boleh kosong");
       return;
     }
     if (!email.contains('@')) {
-      _showError("Format email tidak valid");
+      showError(context, "Format email tidak valid");
       return;
     }
     if (pass.isEmpty) {
-      _showError("Password tidak boleh kosong");
+      showError(context, "Password tidak boleh kosong");
       return;
     }
 
     ref.read(loginViewModelProvider.notifier).login(email, pass);
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
+  @override
+  void dispose() {
+    _email.dispose();
+    _pass.dispose();
+    _emailFocus.dispose();
+    _passFocus.dispose();
+    super.dispose();
   }
 
   @override
@@ -51,15 +56,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     ref.listen(loginViewModelProvider, (prev, next) {
       next.whenOrNull(
-        data: (success) {
-          if (success == true) {
-            context.go('/home');
-          } else {
-            _showError("Email atau password salah");
-          }
+        data: (_) {
+          context.go('/home');
         },
-        error: (err, _) {
-          _showError("Gagal login: $err");
+        error: (error, _) {
+          final msg = error is AppException
+              ? error.message
+              : "Terjadi kesalahan";
+          showError(context, msg);
         },
       );
     });
@@ -129,6 +133,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     controller: _email,
                     hint: "username@email.com",
                     icon: Icons.email_outlined,
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(_passFocus);
+                    },
                   ),
 
                   const SizedBox(height: 16),
@@ -146,6 +154,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
+                    focusNode: _passFocus,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _doLogin(),
                   ),
 
                   const SizedBox(height: 22),
@@ -229,6 +240,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     required IconData icon,
     bool obscure = false,
     Widget? suffix,
+    FocusNode? focusNode,
+    TextInputAction? textInputAction,
+    Function(String)? onSubmitted,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -239,6 +253,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       child: TextField(
         controller: controller,
         obscureText: obscure,
+        focusNode: focusNode,
+        textInputAction: textInputAction,
+        onSubmitted: onSubmitted,
         decoration: InputDecoration(
           hintText: hint,
           border: InputBorder.none,

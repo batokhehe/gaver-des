@@ -1,13 +1,17 @@
 // lib/app/router.dart
 import 'dart:async';
+
+import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaver_des/features/pick_up/presentation/views/pick_up_detail_page.dart';
+import 'package:gaver_des/features/pick_up/presentation/views/pick_up_page.dart';
 import 'package:go_router/go_router.dart';
 
-import '../features/auth/providers/auth_provider.dart';
-import '../features/splash_page.dart';
 import '../features/auth/presentation/views/login_page.dart';
+import '../features/auth/providers/auth_provider.dart';
 import '../features/home/presentation/views/home_page.dart';
+import '../features/splash_page.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
@@ -27,33 +31,28 @@ final hasShownSplashProvider = StateProvider<bool>((ref) => false);
 
 final routerProvider = Provider<GoRouter>((ref) {
   final hasShownSplash = ref.watch(hasShownSplashProvider);
-  final appAsync = ref.watch(appReadyProvider);
+  final authState = ref.watch(authStateProvider);
 
   return GoRouter(
     initialLocation: "/splash",
+
+    observers: [ChuckerFlutter.navigatorObserver],
 
     redirect: (context, state) {
       final atSplash = state.matchedLocation == "/splash";
       final atLogin = state.matchedLocation == "/login";
 
-      // 1️⃣ Splash hanya boleh tampil sekali
       if (!hasShownSplash) {
         return atSplash ? null : "/splash";
       }
 
-      // 2️⃣ Tunggu appReady
-      if (appAsync.isLoading) return null;
-      if (appAsync.hasError) return "/login";
+      if (authState == null) return null;
 
-      final loggedIn = appAsync.value!;
-
-      // 3️⃣ Belum login → ke login
-      if (!loggedIn) {
-        return atLogin ? null : "/login";
+      if (authState == false && !atLogin) {
+        return "/login";
       }
 
-      // 4️⃣ Sudah login → jangan kembali ke splash/login
-      if (loggedIn && (atSplash || atLogin)) {
+      if (authState == true && (atSplash || atLogin)) {
         return "/home";
       }
 
@@ -64,6 +63,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: "/splash", builder: (_, __) => const SplashPage()),
       GoRoute(path: "/login", builder: (_, __) => const LoginPage()),
       GoRoute(path: "/home", builder: (_, __) => const HomePage()),
+      GoRoute(path: "/pick-up", builder: (_, __) => const PickUpPage()),
+      GoRoute(path: "/pick-up-detail", builder: (_, __) => const PickUpDetailPage()),
     ],
   );
 });

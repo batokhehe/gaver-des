@@ -1,30 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/features/profile/presentation/views/change_password_view.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../user/providers/user_provider.dart';
 import '../widgets/logout_button.dart';
 import 'history_page.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userProvider).value;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: SingleChildScrollView(
         child: Column(
           children: [
             _buildHeader(),
-            _buildProfileCard(),
+            _buildProfileCard(user?.name ?? ".."),
             _buildDeliveryCard(context),
             const SizedBox(height: 24),
             _buildSectionTitle("Informasi Akun"),
             const SizedBox(height: 8),
             _infoItem(
               "assets/icons/ic_directbox.png",
-              "Adityap@garudaverdana.com",
+              user?.email ?? "..",
               "Email",
             ),
             _infoItem(
@@ -109,8 +113,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // PROFILE CARD
-  Widget _buildProfileCard() {
+  Widget _buildProfileCard(String fullNameUser) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -131,10 +134,11 @@ class ProfilePage extends StatelessWidget {
               child: Image.asset("assets/images/avatar.png"),
             ),
             const SizedBox(height: 10),
-            const Text(
-              "Aditya Putra Rizki",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            Text(
+              fullNameUser,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
+
             const SizedBox(height: 4),
             const Text(
               "Driver Garuda Verdana",
