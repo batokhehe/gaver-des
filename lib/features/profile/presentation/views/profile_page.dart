@@ -5,6 +5,7 @@ import 'package:gaver_des/features/profile/presentation/views/change_password_vi
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../user/providers/user_provider.dart';
+import '../widgets/logout_bottom_sheet.dart';
 import '../widgets/logout_button.dart';
 import 'history_page.dart';
 
@@ -20,7 +21,7 @@ class ProfilePage extends ConsumerWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(context),
             _buildProfileCard(user?.name ?? ".."),
             _buildDeliveryCard(context),
             const SizedBox(height: 24),
@@ -52,7 +53,7 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Stack(
       children: [
         Container(
@@ -96,13 +97,29 @@ class ProfilePage extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Image.asset(
-                      "assets/icons/ic_logout.png",
-                      width: 16,
-                      height: 16,
+                    InkWell(
+                      onTap: () {
+                        _showLogoutDialog(context);
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              "assets/icons/ic_logout.png",
+                              width: 16,
+                              height: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Logout",
+                              style: AppTypography.xSmallNormalWhite,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    Text("Logout", style: AppTypography.xSmallNormalWhite),
                   ],
                 ),
               ),
@@ -361,6 +378,15 @@ class ProfilePage extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => const LogoutBottomSheet(),
     );
   }
 }

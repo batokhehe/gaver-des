@@ -11,6 +11,8 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/presentation/views/login_page.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/home/presentation/views/home_page.dart';
+import '../features/pick_up/presentation/views/camera_capture_page.dart';
+import '../features/pick_up/presentation/views/receipt_preview_page.dart';
 import '../features/splash_page.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -64,7 +66,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: "/login", builder: (_, __) => const LoginPage()),
       GoRoute(path: "/home", builder: (_, __) => const HomePage()),
       GoRoute(path: "/pick-up", builder: (_, __) => const PickUpPage()),
-      GoRoute(path: "/pick-up-detail", builder: (_, __) => const PickUpDetailPage()),
+      GoRoute(
+        path: "/pick-up-detail",
+        builder: (_, __) => const PickUpDetailPage(),
+      ),
+      GoRoute(
+        path: '/camera',
+        builder: (context, state) => const CameraCapturePage(),
+      ),
+      GoRoute(
+        path: '/receipt-preview',
+        builder: (context, state) {
+          final imagePath = state.extra as String;
+          return ReceiptPreviewPage(imagePath: imagePath);
+        },
+      ),
     ],
   );
 });

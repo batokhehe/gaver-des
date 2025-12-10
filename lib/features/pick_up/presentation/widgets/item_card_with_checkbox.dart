@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gaver_des/core/theme/app_colors.dart';
+import 'package:gaver_des/core/theme/app_typography.dart';
 
 class ItemCardWithCheckbox extends StatelessWidget {
   final String name;
@@ -31,30 +33,35 @@ class ItemCardWithCheckbox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ROW TITLE + CHECKBOX
           Row(
             children: [
               Expanded(
-                child: Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.black12),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(name, style: AppTypography.xSmallNormalBlack),
+                    ],
                   ),
                 ),
               ),
-
-              // Checkbox custom
+              SizedBox(width: 16),
               GestureDetector(
                 onTap: () => onChecked(!checked),
                 child: Container(
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: checked ? Colors.orange : Colors.grey.shade200,
+                    color: checked ? AppColors.primaryDark : Colors.white,
                     borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.black12),
                   ),
                   child: checked
                       ? const Icon(Icons.check, color: Colors.white, size: 20)
@@ -76,21 +83,17 @@ class ItemCardWithCheckbox extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.black12),
                   ),
                   child: Row(
                     children: [
-                      Text(
-                        total,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      Text(total, style: AppTypography.xSmallNormalBlack),
                       const Spacer(),
-                      const Text("Koli"),
+                      const Text(
+                        "Koli",
+                        style: AppTypography.xSmallNormalBlack,
+                      ),
                     ],
                   ),
                 ),
@@ -106,33 +109,32 @@ class ItemCardWithCheckbox extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.black12),
                   ),
                   child: Row(
                     children: [
-                      Text(
-                        weight,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      Text(weight, style: AppTypography.xSmallNormalBlack),
                       const Spacer(),
-                      const Text("Kg"),
+                      const Text("Kg", style: AppTypography.xSmallNormalBlack),
                     ],
                   ),
                 ),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: 20),
 
               // Delete icon
               GestureDetector(
                 onTap: onDelete,
-                child: const Icon(Icons.delete, color: Colors.red),
+                child: Image.asset(
+                  'assets/icons/ic_trash.png',
+                  width: 20,
+                  height: 20,
+                ),
               ),
+              const SizedBox(width: 4),
+
             ],
           ),
         ],

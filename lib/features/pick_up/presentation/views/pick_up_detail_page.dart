@@ -1,13 +1,18 @@
-import 'dart:ui';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:gaver_des/features/pick_up/presentation/widgets/delete_bottom_sheet.dart';
+import 'package:gaver_des/features/pick_up/presentation/widgets/digital_sign_bottom_sheet.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/helpers/permission_helper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../task/presentation/widgets/task_card.dart';
 import '../../data/models/item_detail.dart';
 import '../widgets/add_item_bottom_sheet.dart';
 import '../widgets/item_card_with_checkbox.dart';
+import 'camera_capture_page.dart';
 
 class PickUpDetailPage extends StatefulWidget {
   const PickUpDetailPage({super.key});
@@ -128,7 +133,7 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
                     },
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: const Color(0xFFFFF1E9),
+                      backgroundColor: AppColors.primaryShade,
                       padding: const EdgeInsets.all(8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -146,17 +151,15 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
 
               const SizedBox(height: 20),
 
-              // FORM SERAH TERIMA
               _sectionTitle("Form Serah Terima (Opsional)"),
               const SizedBox(height: 12),
-              _buildSerahTerimaForm(),
+              _buildHandoverForm(),
 
               const SizedBox(height: 20),
 
-              // BUKTI PENGIRIMAN
               _sectionTitle("Bukti Pengiriman"),
               const SizedBox(height: 12),
-              _buildBuktiPengiriman(),
+              _buildReceiptForm(),
 
               const SizedBox(height: 40),
             ],
@@ -203,29 +206,42 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
                 items[i].checked = value;
               });
             },
-            onDelete: () {
-              setState(() {
-                items.removeAt(i);
-              });
+            onDelete: () async {
+              final confirm = await _showDeleteConfirmation(context);
+              if (confirm == true) {
+                setState(() {
+                  items.removeAt(i);
+                });
+              }
             },
           ),
       ],
     );
   }
 
-  Widget _buildSerahTerimaForm() {
-    return Column(
-      children: [
-        _formTtdField("Diserahkan Oleh", "Toko Andalan Sejahtera"),
-        const SizedBox(height: 12),
-        _formTtdField("Diterima Oleh", "Garuda Verdana"),
-        const SizedBox(height: 16),
-        _orangeButton("Preview Serah Terima", () {}),
-      ],
+  Widget _buildHandoverForm() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _formSignField("Diserahkan Oleh", "Toko Andalan Sejahtera"),
+          const SizedBox(height: 12),
+          _formSignField("Diterima Oleh", "Garuda Verdana"),
+          const SizedBox(height: 16),
+          _orangeButton("Preview Serah Terima", () {}),
+        ],
+      ),
     );
   }
 
-  Widget _formTtdField(String title, String name) {
+  Widget _formSignField(String title, String name) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -235,25 +251,53 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
         ),
         const SizedBox(height: 6),
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.black12),
           ),
           child: Row(
             children: [
               Expanded(child: Text(name)),
-              const Icon(Icons.edit, color: Colors.orange),
-              const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.orange),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  "TTD",
-                  style: TextStyle(color: Colors.orange),
+              InkWell(
+                onTap: () async {
+                  final result = await showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    isScrollControlled: true,
+                    builder: (context) => const DigitalSignBottomSheet(),
+                  );
+
+                  if (result != null) {
+                    final base64Sig = base64Encode(result);
+                    print("TTD BASE64: $base64Sig");
+
+                    // TODO: lakukan sesuatu dengan tanda tangan
+                    // setState(() => signatureBase64 = base64Sig);
+                  }
+                },
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryShade,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'assets/icons/ic_magic_pen.png',
+                        width: 16,
+                        height: 16,
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        "TTD",
+                        style: AppTypography.xxSmallNormalPrimary,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -266,7 +310,7 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
   // ----------------------------
   // BUKTI PENGIRIMAN
   // ----------------------------
-  Widget _buildBuktiPengiriman() {
+  Widget _buildReceiptForm() {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -279,24 +323,51 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
           const SizedBox(height: 6),
           const Text("Belum Ada Bukti Pengiriman"),
           const SizedBox(height: 10),
-          _orangeButton("Unggah Bukti", () {}),
+          _orangeButton("Unggah Bukti", () async {
+            if (await PermissionHelper.camera()) {
+              final imagePath = await context.push<String>('/camera');
+
+              if (imagePath != null) {
+                print("HASIL FOTO: $imagePath");
+                // setState(() => receiptImagePath = imagePath);
+              }
+            }
+          }),
         ],
       ),
     );
   }
 
-  // ----------------------------
-  // BOTTOM BUTTON
-  // ----------------------------
   Widget _buildBottomButton() {
     return Container(
       padding: const EdgeInsets.all(16),
       color: Colors.white,
-      child: _orangeButton("Selesaikan Tugas", () {}),
+      child: SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryDark,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onPressed: () {
+            context.push('/pick-up-detail');
+          },
+          child: const Text(
+            "Selesaikan Tugas",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  // BUTTON STYLE
   Widget _orangeButton(String text, VoidCallback onTap) {
     return SizedBox(
       width: double.infinity,
@@ -304,20 +375,22 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.primaryShade,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: Text(text, style: AppTypography.xSmallBoldPrimary),
       ),
+    );
+  }
+
+  Future<bool?> _showDeleteConfirmation(BuildContext context) {
+    return showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => const DeleteBottomSheet(),
     );
   }
 }
