@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gaver_des/features/home/domain/entities/job.dart';
-import 'package:gaver_des/features/home/presentation/widgets/task_info_bottom_sheet.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../views/home_page.dart';
 
 class JobActiveCard extends StatelessWidget {
   const JobActiveCard({super.key, required Job? job, required this.onOpenTask});

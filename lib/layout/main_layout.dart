@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../features/home/presentation/views/dashboard_page.dart';
-
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
 
