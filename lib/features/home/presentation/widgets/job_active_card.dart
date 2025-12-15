@@ -7,7 +7,9 @@ import '../../../../core/theme/app_typography.dart';
 import '../views/home_page.dart';
 
 class JobActiveCard extends StatelessWidget {
-  const JobActiveCard({super.key, required Job? job});
+  const JobActiveCard({super.key, required Job? job, required this.onOpenTask});
+
+  final VoidCallback onOpenTask;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +46,7 @@ class JobActiveCard extends StatelessWidget {
               ],
             ),
           ),
-          JobActiveDetail(),
+          JobActiveDetail(onOpenTask: onOpenTask),
         ],
       ),
     );
@@ -74,7 +76,9 @@ class CardPickupInfo extends StatelessWidget {
 }
 
 class JobActiveDetail extends StatelessWidget {
-  const JobActiveDetail({super.key});
+  final VoidCallback onOpenTask;
+
+  const JobActiveDetail({super.key, required this.onOpenTask});
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +114,7 @@ class JobActiveDetail extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () => _showTaskInfoDialog(context),
+            onTap: onOpenTask,
             child: Container(
               width: 24,
               height: 24,
@@ -127,25 +131,6 @@ class JobActiveDetail extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  void _showTaskInfoDialog(BuildContext context) {
-    final bottomNav = context.findAncestorStateOfType<HomePageState>();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (bottomSheetContext) {
-        return TaskInfoBottomSheet(
-          onGoToTask: () async {
-            Navigator.pop(bottomSheetContext);
-            await Future.delayed(Duration(milliseconds: 80));
-            bottomNav?.changeTab(1);
-          },
-        );
-      },
     );
   }
 }

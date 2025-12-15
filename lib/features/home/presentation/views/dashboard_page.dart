@@ -8,10 +8,14 @@ import '../widgets/daily_recap_section.dart';
 import '../widgets/header_section.dart';
 import '../widgets/job_active_card.dart';
 import '../widgets/job_empty_card.dart';
+import '../widgets/task_info_bottom_sheet.dart';
 import '../widgets/vehicle_card.dart';
+import 'home_page.dart';
 
 class DashboardPage extends ConsumerWidget {
-  const DashboardPage({super.key});
+  final VoidCallback onGoToTask;
+
+  const DashboardPage({super.key, required this.onGoToTask});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -66,7 +70,12 @@ class DashboardPage extends ConsumerWidget {
                     children: [
                       sectionTitle("Pekerjaan Aktif"),
                       hasActiveJob
-                          ? JobActiveCard(job: null)
+                          ? JobActiveCard(
+                              job: null,
+                              onOpenTask: () {
+                                _showTaskInfoDialog(context, onGoToTask);
+                              },
+                            )
                           : const JobEmptyCard(),
                       const SizedBox(height: 16),
 
@@ -106,5 +115,22 @@ Widget sectionTitle(String text) {
       ),
       child: Text(text, style: AppTypography.mediumBoldBlack),
     ),
+  );
+}
+
+void _showTaskInfoDialog(BuildContext context, VoidCallback onGoToTask) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (bottomSheetContext) {
+      return TaskInfoBottomSheet(
+        onGoToTask: () async {
+          Navigator.pop(bottomSheetContext);
+          await Future.delayed(const Duration(milliseconds: 100));
+          onGoToTask();
+        },
+      );
+    },
   );
 }

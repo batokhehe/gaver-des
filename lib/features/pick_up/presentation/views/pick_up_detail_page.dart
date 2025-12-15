@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/delete_bottom_sheet.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/digital_sign_bottom_sheet.dart';
+import 'package:gaver_des/features/pick_up/presentation/widgets/finish_confirmation_bottom_sheet.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/helpers/permission_helper.dart';
@@ -12,7 +13,7 @@ import '../../../task/presentation/widgets/task_card.dart';
 import '../../data/models/item_detail.dart';
 import '../widgets/add_item_bottom_sheet.dart';
 import '../widgets/item_card_with_checkbox.dart';
-import 'camera_capture_page.dart';
+import '../widgets/receipt_preview_bottom_sheet.dart';
 
 class PickUpDetailPage extends StatefulWidget {
   const PickUpDetailPage({super.key});
@@ -31,6 +32,7 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
     ItemDetail(name: "Tepung Terigu Premium 25kg", total: 8, weight: 200),
     ItemDetail(name: "Air Mineral Galon 19L", total: 10, weight: 190),
   ];
+  String? receiptImagePath;
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +41,9 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
       body: Column(
         children: [
           _buildHeader(),
-          Expanded(child: _buildContent()),
+          Expanded(child: Stack(children: [_buildContent()])),
         ],
       ),
-      bottomNavigationBar: _buildBottomButton(),
     );
   }
 
@@ -104,7 +105,6 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
             children: [
               const SizedBox(height: 8),
 
-              // INFORMASI PENGIRIMAN
               _sectionTitle("Informasi Pengiriman"),
               const SizedBox(height: 8),
               _buildPickUpInfo(),
@@ -141,27 +141,22 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
                     ),
                     child: const Text(
                       "+ Tambah Barang",
-                      style: AppTypography.xxSmallNormalPrimary,
+                      style: AppTypography.xSmallNormalPrimary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
               _buildItemList(),
-
-              const SizedBox(height: 20),
-
+              const SizedBox(height: 12),
               _sectionTitle("Form Serah Terima (Opsional)"),
               const SizedBox(height: 12),
               _buildHandoverForm(),
-
-              const SizedBox(height: 20),
-
+              const SizedBox(height: 12),
               _sectionTitle("Bukti Pengiriman"),
               const SizedBox(height: 12),
               _buildReceiptForm(),
-
-              const SizedBox(height: 40),
+              const SizedBox(height: 12),
+              _buildBottomButton(),
             ],
           ),
         ),
@@ -294,7 +289,7 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
                       const SizedBox(width: 10),
                       const Text(
                         "TTD",
-                        style: AppTypography.xxSmallNormalPrimary,
+                        style: AppTypography.xSmallNormalPrimary,
                       ),
                     ],
                   ),
@@ -307,15 +302,67 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
     );
   }
 
-  // ----------------------------
-  // BUKTI PENGIRIMAN
-  // ----------------------------
   Widget _buildReceiptForm() {
+    if (receiptImagePath != null) {
+      final fileName = receiptImagePath!.split('/').last;
+
+      return InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () async {
+          final action = await showModalBottomSheet<String>(
+            context: context,
+            backgroundColor: Colors.transparent,
+            isScrollControlled: true,
+            builder: (_) =>
+                ReceiptPreviewBottomSheet(imagePath: receiptImagePath!),
+          );
+
+          if (action == 'retake') {
+            if (await PermissionHelper.camera()) {
+              final imagePath = await context.push<String>('/camera');
+              if (imagePath != null) {
+                setState(() => receiptImagePath = imagePath);
+              }
+            }
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+          ),
+          child: Column(
+            children: [
+              Image.asset(width: 40, "assets/icons/ic_clipboard_tick.png"),
+              const SizedBox(height: 8),
+              Text(
+                fileName,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              _orangeButton("Unggah Bukti", () async {
+                if (await PermissionHelper.camera()) {
+                  final imagePath = await context.push<String>('/camera');
+                  if (imagePath != null) {
+                    setState(() => receiptImagePath = imagePath);
+                  }
+                }
+              }),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12),
       ),
       child: Column(
         children: [
@@ -326,10 +373,8 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
           _orangeButton("Unggah Bukti", () async {
             if (await PermissionHelper.camera()) {
               final imagePath = await context.push<String>('/camera');
-
               if (imagePath != null) {
-                print("HASIL FOTO: $imagePath");
-                // setState(() => receiptImagePath = imagePath);
+                setState(() => receiptImagePath = imagePath);
               }
             }
           }),
@@ -353,7 +398,7 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
             ),
           ),
           onPressed: () {
-            context.push('/pick-up-detail');
+            _showFinishConfirmation(context);
           },
           child: const Text(
             "Selesaikan Tugas",
@@ -392,5 +437,20 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
       isScrollControlled: true,
       builder: (context) => const DeleteBottomSheet(),
     );
+  }
+
+  Future<void> _showFinishConfirmation(BuildContext context) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => const FinishConfirmationBottomSheet(),
+    );
+
+    if (result == true && context.mounted) {
+      if (result == true && context.mounted) {
+        context.go('/home?finished=true');
+      }
+    }
   }
 }

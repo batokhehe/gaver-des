@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_typography.dart';
-
 class ForgotPasswordBottomSheet extends StatelessWidget {
   const ForgotPasswordBottomSheet({super.key});
 

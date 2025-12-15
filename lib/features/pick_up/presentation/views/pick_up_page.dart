@@ -162,12 +162,12 @@ class _PickUpPageState extends State<PickUpPage> {
         height: 50,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryDark, // warna sesuai desain
+            backgroundColor: AppColors.primaryDark,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          onPressed: () {
+          onPressed: () async {
             context.push('/pick-up-detail');
           },
           child: const Text(

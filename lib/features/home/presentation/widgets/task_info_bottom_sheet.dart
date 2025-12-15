@@ -3,7 +3,6 @@ import 'package:gaver_des/features/task/presentation/widgets/task_card.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_typography.dart';
-import '../../../pick_up/presentation/views/pick_up_page.dart';
 import '../../data/models/task_item.dart';
 
 class TaskInfoBottomSheet extends StatelessWidget {
@@ -96,7 +95,13 @@ class TaskInfoBottomSheet extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    context.pushReplacement('/pick-up');
+                    Navigator.pop(context);
+
+                    Future.microtask(() {
+                      if (context.mounted) {
+                        context.push('/pick-up');
+                      }
+                    });
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD55A24),

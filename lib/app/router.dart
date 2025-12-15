@@ -64,7 +64,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: "/splash", builder: (_, __) => const SplashPage()),
       GoRoute(path: "/login", builder: (_, __) => const LoginPage()),
-      GoRoute(path: "/home", builder: (_, __) => const HomePage()),
+      GoRoute(
+        path: '/home',
+        builder: (context, state) {
+          final finished = state.uri.queryParameters['finished'] == 'true';
+
+          return HomePage(showFinishSnackBar: finished);
+        },
+      ),
       GoRoute(path: "/pick-up", builder: (_, __) => const PickUpPage()),
       GoRoute(
         path: "/pick-up-detail",

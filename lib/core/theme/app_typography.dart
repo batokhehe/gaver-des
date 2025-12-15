@@ -30,7 +30,7 @@ class AppTypography {
 
   static const mediumBoldWhite = TextStyle(
     fontSize: 16,
-    color: Colors.black,
+    color: Colors.white,
     fontWeight: FontWeight.bold,
   );
   static const smallBoldWhite = TextStyle(
@@ -39,18 +39,20 @@ class AppTypography {
     fontWeight: FontWeight.bold,
   );
   static const smallNormalWhite = TextStyle(fontSize: 14, color: Colors.white);
+  static const mediumNormalWhite = TextStyle(fontSize: 16, color: Colors.white);
   static const xSmallNormalWhite = TextStyle(fontSize: 12, color: Colors.white);
 
-  static const smallNormalPrimary = TextStyle(
+  static const mediumNormalPrimary = TextStyle(
     fontSize: 16,
     color: AppColors.primaryDark,
   );
-  static const xxSmallNormalPrimary = TextStyle(
-    fontSize: 12,
+
+  static const smallNormalPrimary = TextStyle(
+    fontSize: 14,
     color: AppColors.primaryDark,
   );
   static const xSmallNormalPrimary = TextStyle(
-    fontSize: 14,
+    fontSize: 12,
     color: AppColors.primaryDark,
   );
   static const xSmallBoldPrimary = TextStyle(

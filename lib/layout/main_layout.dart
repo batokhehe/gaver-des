@@ -13,7 +13,6 @@ class _MainLayoutState extends State<MainLayout> {
   int index = 0;
 
   final pages = [
-    DashboardPage(),
     Placeholder(), // Tugas
     Placeholder(), // Notif
     Placeholder(), // Profile

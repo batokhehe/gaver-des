@@ -12,54 +12,81 @@ class ReceiptPreviewPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
+      body: Column(
         children: [
-          // IMAGE PREVIEW
-          Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.file(File(imagePath), fit: BoxFit.contain),
+          _buildHeader(context),
+          Expanded(
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.file(File(imagePath), fit: BoxFit.cover),
+                ),
+                _buildConfirmButton(context),
+              ],
             ),
           ),
+        ],
+      ),
+    );
+  }
 
-          // BACK BUTTON + TITLE
-          SafeArea(
+  Widget _buildHeader(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          width: double.infinity,
+          height: 150,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/images/bg_header.png"),
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+            ),
+          ),
+        ),
+        SafeArea(
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => context.pop(), // ← UPDATED
+                GestureDetector(
+                  onTap: () => context.pop(),
+                  child: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
+                const SizedBox(width: 12),
                 const Text(
                   "Bukti Pengiriman",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
           ),
+        ),
+      ],
+    );
+  }
 
-          // CONFIRM BUTTON
-          Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: GestureDetector(
-                onTap: () {
-                  context.pop(imagePath); // ← UPDATED (return value)
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 28),
-                ),
-              ),
-            ),
+  Widget _buildConfirmButton(BuildContext context) {
+    return Positioned(
+      bottom: 40,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: GestureDetector(
+          onTap: () {
+            context.pop(imagePath);
+          },
+          child: AnimatedScale(
+            scale: 1,
+            duration: const Duration(milliseconds: 150),
+            child: Image.asset(width: 100, "assets/icons/ic_take_camera.png"),
           ),
-        ],
+        ),
       ),
     );
   }

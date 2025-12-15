@@ -6,7 +6,9 @@ import '../../../task/presentation/views/task_page.dart';
 import 'dashboard_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final bool showFinishSnackBar;
+
+  const HomePage({super.key, this.showFinishSnackBar = false});
 
   @override
   State<HomePage> createState() => HomePageState();
@@ -15,12 +17,40 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   int currentIndex = 0;
 
-  final pages = [
-    DashboardPage(),
-    TaskPage(),
-    NotificationPage(),
-    ProfilePage(),
-  ];
+  late final List<Widget> pages;
+
+  @override
+  void initState() {
+    super.initState();
+
+    pages = [
+      DashboardPage(onGoToTask: () => changeTab(1)),
+      const TaskPage(),
+      const NotificationPage(),
+      const ProfilePage(),
+    ];
+  }
+
+  @override
+  void didUpdateWidget(covariant HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.showFinishSnackBar && !oldWidget.showFinishSnackBar) {
+      _showFinishSnackBar();
+    }
+  }
+
+  void _showFinishSnackBar() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Tugas berhasil diselesaikan 🎉"),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    });
+  }
 
   void changeTab(int index) {
     setState(() => currentIndex = index);
@@ -32,7 +62,7 @@ class HomePageState extends State<HomePage> {
       body: pages[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
-        onTap: (index) => changeTab(index),
+        onTap: changeTab,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
