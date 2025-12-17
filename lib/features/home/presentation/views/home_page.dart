@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/features/notification/presentation/views/notification_page.dart';
 import 'package:gaver_des/features/profile/presentation/views/profile_page.dart';
 
@@ -62,9 +63,10 @@ class HomePageState extends State<HomePage> {
       body: pages[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
+        backgroundColor: AppColors.white,
         onTap: changeTab,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.grey3,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(

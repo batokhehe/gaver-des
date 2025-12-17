@@ -218,6 +218,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
         shipments = [
           TaskItem(
+            id: 0,
             code: "PKO.2025.11.0005",
             hub: "Hub Jakarta Selatan",
             status: "Pick up",
@@ -227,6 +228,7 @@ class _HistoryPageState extends State<HistoryPage> {
             address: "Jl. Palmerah Barat No. 22, Gelora",
           ),
           TaskItem(
+            id: 0,
             code: "PKO.2025.11.0005",
             hub: "Gudang Utama Garuda",
             status: "Pick up return",
@@ -285,6 +287,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
         ...shipments.map((task) {
           return TaskCard(
+            id: 0,
             code: task.code,
             hub: task.hub,
             status: task.status,
@@ -316,6 +319,7 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
           const SizedBox(height: 8),
           TaskCard(
+            id: 0,
             code: data["code"],
             hub: data["hub"],
             status: data["status"],

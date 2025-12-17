@@ -72,10 +72,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           return HomePage(showFinishSnackBar: finished);
         },
       ),
-      GoRoute(path: "/pick-up", builder: (_, __) => const PickUpPage()),
       GoRoute(
-        path: "/pick-up-detail",
-        builder: (_, __) => const PickUpDetailPage(),
+        path: '/pickup-detail/:id',
+        name: 'pickup-detail',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return PickUpPage(id: id);
+        },
       ),
       GoRoute(
         path: '/camera',

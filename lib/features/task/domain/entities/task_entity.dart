@@ -1,22 +1,18 @@
-import 'dart:ui';
-
-class TaskItem {
+class TaskEntity {
   final int id;
   final String code;
   final String hub;
   final String status;
-  final Color statusColor;
-  final int item;
+  final int itemCount;
   final String vendor;
   final String address;
 
-  TaskItem({
+  TaskEntity({
     required this.id,
     required this.code,
     required this.hub,
     required this.status,
-    required this.statusColor,
-    required this.item,
+    required this.itemCount,
     required this.vendor,
     required this.address,
   });

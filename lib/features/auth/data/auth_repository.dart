@@ -28,10 +28,7 @@ class AuthRepository {
         throw AppException(message: "Data login tidak lengkap dari server.");
       }
 
-      // Simpan token
       await storage.write(key: _keyToken, value: token);
-
-      // Simpan user model lengkap
       final user = UserModel.fromJson(userJson);
       await ref.read(userRepositoryProvider).saveUser(user);
 

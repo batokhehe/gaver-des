@@ -1,52 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
-import 'package:gaver_des/features/pick_up/data/models/item.dart';
+import 'package:gaver_des/features/pick_up/domain/entities/pick_up_entity.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/item_card.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../task/presentation/widgets/task_card.dart';
+import '../../domain/entities/item_entity.dart';
+import '../../providers/pickup_items_provider.dart';
 
-class PickUpPage extends StatefulWidget {
-  const PickUpPage({super.key});
+class PickUpPage extends ConsumerStatefulWidget {
+  final int id;
+
+  const PickUpPage({super.key, required this.id});
 
   @override
-  State<PickUpPage> createState() => _PickUpPageState();
+  ConsumerState<PickUpPage> createState() => _PickUpPageState();
 }
 
-class _PickUpPageState extends State<PickUpPage> {
-  List<Item> items = [
-    Item(
-      code: "PKO.2025.11.0005",
-      status: "Pick up",
-      statusColor: Colors.orange,
-      name: 'Minyak Goreng Kemassan 2L (Box 6 pcs)',
-      total: '12 Koli',
-      weight: '144 Kg',
-    ),
-    Item(
-      code: "PKO.2025.11.0005",
-      status: "Pick up",
-      statusColor: Colors.orange,
-      name: 'Tepung Terigu Premium 25kg',
-      total: '8 Koli',
-      weight: '200 Kg',
-    ),
-    Item(
-      code: "PKO.2025.11.0005",
-      status: "Air Mineral Galon 19L",
-      statusColor: Colors.orange,
-      name: 'Tepung Terigu Premium 25kg',
-      total: '10 Koli',
-      weight: '190 Kg',
-    ),
-  ];
-
+class _PickUpPageState extends ConsumerState<PickUpPage> {
   @override
   Widget build(BuildContext context) {
+    final pickUp = ref.watch(pickupProvider(widget.id));
+
     return Scaffold(
       backgroundColor: AppColors.greyBg,
-      body: Column(children: [_buildHeader(), _buildInfo()]),
+      body: pickUp.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text(e.toString())),
+        data: (detail) {
+          return Column(children: [_buildHeader(), _buildInfo(detail)]);
+        },
+      ),
       bottomNavigationBar: _buildBottomButton(),
     );
   }
@@ -91,7 +77,7 @@ class _PickUpPageState extends State<PickUpPage> {
     );
   }
 
-  Widget _buildInfo() {
+  Widget _buildInfo(PickUpEntity detail) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -108,46 +94,51 @@ class _PickUpPageState extends State<PickUpPage> {
           children: [
             Text("Informasi Pengiriman", style: AppTypography.smallBoldBlack),
             SizedBox(height: 8),
-            _buildTaskList(),
+            _buildPickUpHeader(detail),
             SizedBox(height: 16),
             Text("Daftar Barang", style: AppTypography.smallBoldBlack),
             SizedBox(height: 8),
-            _buildItemList(),
+            _buildItemList(detail.items),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTaskList() {
+  Widget _buildPickUpHeader(PickUpEntity detail) {
     return TaskCard(
-      code: "PKO.2025.11.0002",
+      id: detail.id,
+      code: detail.code,
       hub: "Hub Jakarta Selatan",
-      status: "Pick up",
+      status: detail.status,
       statusColor: Colors.orange,
-      item: 3,
-      vendor: "UD. Cahaya Ekspres",
-      address: "Jl. Merdeka Timur No. 88, Jakarta Pusat",
-      isShowBottomNext: true,
+      item: detail.items.length,
+      vendor: detail.vendor ?? "-",
+      address: detail.address ?? "-",
+      isShowBottomNext: false,
     );
   }
 
-  Widget _buildItemList() {
+  Widget _buildItemList(List<ItemEntity> items) {
+    if (items.isEmpty) {
+      return const Text('Tidak ada barang');
+    }
+
     return ListView.builder(
       padding: EdgeInsets.zero,
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: items.length,
       itemBuilder: (context, index) {
-        final task = items[index];
+        final item = items[index];
 
         return ItemCard(
-          code: task.code,
-          name: task.name,
-          status: task.status,
-          statusColor: task.statusColor,
-          total: task.total,
-          weight: task.weight,
+          code: "ITEM-${item.id}",
+          name: item.name,
+          status: "Pick up",
+          statusColor: Colors.orange,
+          total: "${item.qty} ${item.uom}",
+          weight: "${item.weight} ${item.uom}",
         );
       },
     );

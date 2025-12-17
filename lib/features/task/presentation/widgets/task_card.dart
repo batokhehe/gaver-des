@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../pick_up/presentation/views/pick_up_detail_page.dart';
 
 class TaskCard extends StatelessWidget {
+  final int id;
   final String code;
   final String hub;
   final String status;
@@ -14,6 +18,7 @@ class TaskCard extends StatelessWidget {
 
   const TaskCard({
     super.key,
+    required this.id,
     required this.code,
     required this.hub,
     required this.status,
@@ -59,7 +64,7 @@ class TaskCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,11 +120,17 @@ class TaskCard extends StatelessWidget {
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Image.asset(
-                          "assets/icons/ic_arrow_forward.png",
-                          width: 42,
-                          height: 42,
-                          fit: BoxFit.contain,
+                        InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () {
+                            context.push('/pickup-detail/$id');
+                          },
+                          child: Image.asset(
+                            "assets/icons/ic_arrow_forward.png",
+                            width: 42,
+                            height: 42,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ],
                     )

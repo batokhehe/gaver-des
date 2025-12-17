@@ -12,6 +12,7 @@ class TaskInfoBottomSheet extends StatelessWidget {
 
   final List<TaskItem> shipments = [
     TaskItem(
+      id: 0,
       code: "PKO.2025.11.0005",
       hub: "Hub Jakarta Selatan",
       status: "Pick up",
@@ -52,6 +53,7 @@ class TaskInfoBottomSheet extends StatelessWidget {
 
           ...shipments.map(
             (task) => TaskCard(
+              id: task.id,
               code: task.code,
               hub: task.hub,
               status: task.status,

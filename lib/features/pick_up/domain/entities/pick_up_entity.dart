@@ -1,23 +1,21 @@
-import 'dart:ui';
+import 'item_entity.dart';
 
-class TaskItem {
+class PickUpEntity {
   final int id;
   final String code;
-  final String hub;
   final String status;
-  final Color statusColor;
-  final int item;
+  final DateTime pickupDate;
   final String vendor;
   final String address;
+  final List<ItemEntity> items;
 
-  TaskItem({
+  const PickUpEntity({
     required this.id,
     required this.code,
-    required this.hub,
     required this.status,
-    required this.statusColor,
-    required this.item,
+    required this.pickupDate,
     required this.vendor,
     required this.address,
+    required this.items,
   });
 }

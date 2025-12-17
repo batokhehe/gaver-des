@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
 
 import '../../../user/providers/user_provider.dart';
@@ -24,6 +25,7 @@ class DashboardPage extends ConsumerWidget {
     final vehicle = ref.watch(userVehicleProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.greyBg,
       body: RefreshIndicator(
         onRefresh: () async {
           await ref.read(userRepositoryProvider).fetchUserFromApi();
@@ -58,7 +60,7 @@ class DashboardPage extends ConsumerWidget {
                 child: Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.greyBg,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(28),
                       topRight: Radius.circular(28),
@@ -104,16 +106,7 @@ class DashboardPage extends ConsumerWidget {
 Widget sectionTitle(String text) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-    child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(blurRadius: 4, color: Colors.black.withOpacity(0.04)),
-        ],
-      ),
-      child: Text(text, style: AppTypography.mediumBoldBlack),
-    ),
+    child: Text(text, style: AppTypography.mediumBoldBlack),
   );
 }
 

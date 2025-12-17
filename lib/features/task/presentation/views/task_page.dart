@@ -1,29 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 
+import '../../../../core/widgets/async_state_builder.dart';
+import '../../domain/entities/task_entity.dart';
+import '../../providers/task_filter_provider.dart';
+import '../../providers/task_viewmodel.dart';
 import '../widgets/task_card.dart';
+import '../widgets/task_empty_state_card.dart';
 
-class TaskPage extends StatefulWidget {
+class TaskPage extends ConsumerWidget {
   const TaskPage({super.key});
 
   @override
-  State<TaskPage> createState() => _TaskPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filter = ref.watch(taskFilterProvider);
+    final tasksAsync = ref.watch(taskListProvider);
+    final pickupCountAsync = ref.watch(taskPickupCountProvider);
+    final deliveryCountAsync = ref.watch(taskDeliveryCountProvider);
 
-class _TaskPageState extends State<TaskPage> {
-  int selectedTab = 0;
-
-  final tabs = ["Semua (5)", "Pick up (4)", "Delivery (1)"];
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.greyBg,
       body: Column(
         children: [
           _buildHeader(),
-          _buildTabs(),
-          Expanded(child: _buildTaskList()),
+          _buildTabs(ref, filter, pickupCountAsync, deliveryCountAsync),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await Future.wait([
+                  ref.refresh(taskListProvider.future),
+                  ref.refresh(taskPickupCountProvider.future),
+                  ref.refresh(taskDeliveryCountProvider.future),
+                ]);
+              },
+              child: AsyncStateBuilder<List<TaskEntity>>(
+                value: tasksAsync,
+                builder: (tasks) {
+                  if (tasks.isEmpty) {
+                    return ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [SizedBox(height: 120), TaskEmptyState()],
+                    );
+                  }
+
+                  return ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: tasks.length,
+                    itemBuilder: (_, i) {
+                      final t = tasks[i];
+                      return TaskCard(
+                        id: t.id,
+                        code: t.code,
+                        hub: t.hub,
+                        status: t.status,
+                        statusColor: t.status == 'active'
+                            ? Colors.orange
+                            : Colors.blue,
+                        item: t.itemCount,
+                        vendor: t.vendor,
+                        address: t.address,
+                        isShowBottomNext: true,
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -69,88 +114,82 @@ class _TaskPageState extends State<TaskPage> {
     );
   }
 
-  Widget _buildTabs() {
+  Widget _buildTabs(
+    WidgetRef ref,
+    TaskFilter selected,
+    AsyncValue<int> pickupCountAsync,
+    AsyncValue<int> deliveryCountAsync,
+  ) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.greyBg,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(tabs.length, (index) {
-            final isSelected = index == selectedTab;
-            return GestureDetector(
-              onTap: () => setState(() => selectedTab = index),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primaryShade : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.primaryShade
-                        : AppColors.inactiveBorder,
-                  ),
-                ),
-                child: Text(
-                  tabs[index],
-                  style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w400,
-                    color: isSelected ? AppColors.primaryDark : Colors.black87,
-                  ),
-                ),
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            _tabItem(
+              text: 'Pick up',
+              count: pickupCountAsync.maybeWhen(
+                data: (v) => v,
+                orElse: () => 0,
               ),
-            );
-          }),
+              selected: selected == TaskFilter.pickup,
+              onTap: () => ref.read(taskFilterProvider.notifier).state =
+                  TaskFilter.pickup,
+            ),
+            _tabItem(
+              text: 'Delivery',
+              count: deliveryCountAsync.maybeWhen(
+                data: (v) => v,
+                orElse: () => 0,
+              ),
+              selected: selected == TaskFilter.delivery,
+              onTap: () => ref.read(taskFilterProvider.notifier).state =
+                  TaskFilter.delivery,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildTaskList() {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      children: const [
-        TaskCard(
-          code: "PKO.2025.11.0002",
-          hub: "Hub Jakarta Selatan",
-          status: "Pick up",
-          statusColor: Colors.orange,
-          item: 3,
-          vendor: "UD. Cahaya Ekspres",
-          address: "Jl. Merdeka Timur No. 88, Jakarta Pusat",
-          isShowBottomNext: true,
+  Widget _tabItem({
+    required String text,
+    required int count,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primaryShade : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected
+                  ? AppColors.primary
+                  : AppColors.inactiveBorder,
+            ),
+          ),
+          child: Text(
+            '$text ($count)',
+            style: TextStyle(
+              fontWeight: selected ? FontWeight.bold : FontWeight.w400,
+              color: selected ? AppColors.primaryDark : Colors.black87,
+            ),
+          ),
         ),
-        TaskCard(
-          code: "PKO.2025.11.0003",
-          hub: "Gudang Utama Garuda",
-          status: "Pick up return",
-          statusColor: Colors.red,
-          item: 10,
-          vendor: "Toko Andalan Sejahtera",
-          address: "Jl. Raya Cikunir No. 45, Bekasi, Jakarta",
-          isShowBottomNext: true,
-        ),
-        TaskCard(
-          code: "DO.2025.11.0002",
-          hub: "Hub Jakarta Timur",
-          status: "Delivery",
-          statusColor: Colors.blue,
-          item: 3,
-          vendor: "Toko Andalan Sejahtera",
-          address: "Jl. Gatot Subroto Blok B3 No. 12, Jakarta Selatan",
-          isShowBottomNext: true,
-        ),
-      ],
+      ),
     );
   }
 }

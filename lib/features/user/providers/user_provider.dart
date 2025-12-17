@@ -17,6 +17,11 @@ final userEmailProvider = Provider<String>((ref) {
   return user?.email ?? "..";
 });
 
+final userIdProvider = Provider<int>((ref) {
+  final user = ref.watch(userProvider).value;
+  return user?.id ?? 0;
+});
+
 final userVehicleProvider = Provider<VehicleModel?>((ref) {
   final user = ref.watch(userProvider).value;
   return user?.vehicle;

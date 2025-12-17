@@ -16,7 +16,7 @@ import '../widgets/item_card_with_checkbox.dart';
 import '../widgets/receipt_preview_bottom_sheet.dart';
 
 class PickUpDetailPage extends StatefulWidget {
-  const PickUpDetailPage({super.key});
+  const PickUpDetailPage({super.key, required String id});
 
   @override
   State<PickUpDetailPage> createState() => _PickUpDetailPageState();
@@ -176,6 +176,7 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
 
   Widget _buildPickUpInfo() {
     return TaskCard(
+      id: 0,
       code: "PKO.2025.11.0002",
       hub: "Hub Jakarta Selatan",
       status: "Pick up",

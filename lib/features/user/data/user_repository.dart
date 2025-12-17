@@ -26,7 +26,6 @@ class UserRepository {
     return UserModel.fromJson(data);
   }
 
-  // Hapus user dari storage (logout)
   Future<void> clearUser() async {
     await storage.delete(key: _keyUser);
   }
