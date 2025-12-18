@@ -15,6 +15,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../task/presentation/widgets/task_card.dart';
 import '../../providers/pickup_items_provider.dart';
+import '../widgets/add_item_bottom_sheet.dart';
 import '../widgets/item_card_with_checkbox.dart';
 import '../widgets/receipt_preview_bottom_sheet.dart';
 import '../widgets/signature_preview_bottom_sheet.dart';
@@ -46,6 +47,8 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (detail) {
+          _localItems ??= List.from(detail.items);
+
           return Column(
             children: [
               _buildHeader(),
@@ -119,9 +122,49 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
               const SizedBox(height: 16),
 
-              _sectionTitle("Daftar Barang"),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _sectionTitle("Daftar Barang"),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final result = await AddItemBottomSheet.show(context);
+                      if (result != null) {
+                        setState(() {
+                          final newItem = ItemEntity(
+                            id: DateTime.now().millisecondsSinceEpoch,
+                            name: result["name"],
+                            qty: int.parse(result["total"].toString()),
+                            uom: '',
+                            weight: double.parse(result["weight"].toString()),
+                            actualWeight: double.parse(
+                              result["weight"].toString(),
+                            ),
+                            productOption: result["name"],
+                          );
+
+                          _localItems!.add(newItem);
+                          checkedItems[newItem.id] = false;
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: AppColors.primaryShade,
+                      padding: const EdgeInsets.all(8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      "+ Tambah Barang",
+                      style: AppTypography.xSmallNormalPrimary,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
-              _buildItemList(detail.items),
+              _buildItemList(),
 
               const SizedBox(height: 12),
               _sectionTitle("Form Serah Terima (Opsional)"),
@@ -166,9 +209,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
     );
   }
 
-  Widget _buildItemList(List<ItemEntity> items) {
-    _localItems ??= List.from(items);
-
+  Widget _buildItemList() {
     return Column(
       children: List.generate(_localItems!.length, (i) {
         final item = _localItems![i];
@@ -176,8 +217,8 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
         return ItemCardWithCheckbox(
           name: item.name,
-          total: "${item.qty} ${item.uom}",
-          weight: "${item.weight} ${item.uom}",
+          total: "${item.qty}",
+          weight: "${item.weight}",
           checked: checked,
           onChecked: (value) {
             setState(() {
