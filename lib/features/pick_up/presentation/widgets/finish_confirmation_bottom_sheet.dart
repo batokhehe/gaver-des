@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/navigation/tab_index_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../task/providers/task_viewmodel.dart';
+import '../../providers/pickup_items_provider.dart';
 
-class FinishConfirmationBottomSheet extends StatelessWidget {
-  const FinishConfirmationBottomSheet({super.key});
+class FinishConfirmationBottomSheet extends ConsumerWidget {
+  final int pickupId;
+
+  const FinishConfirmationBottomSheet({super.key, required this.pickupId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
@@ -61,6 +67,7 @@ class FinishConfirmationBottomSheet extends StatelessWidget {
 
           Row(
             children: [
+              // BATAL
               Expanded(
                 child: ElevatedButton(
                   onPressed: () => context.pop(false),
@@ -77,10 +84,41 @@ class FinishConfirmationBottomSheet extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(width: 12),
+
+              // SELESAIKAN
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => context.pop(true),
+                  onPressed: () async {
+                    // 🔥 HIT API FINISH
+                    await ref
+                        .read(pickupActionControllerProvider.notifier)
+                        .finishPickup(pickupId);
+
+                    final state = ref.read(pickupActionControllerProvider);
+
+                    if (state.hasError) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Gagal menyelesaikan tugas'),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // 🔁 REFRESH DASHBOARD API
+                    ref.refresh(taskDashboardResponseProvider.future);
+
+                    // 🏠 PINDAH KE DASHBOARD
+                    ref.read(tabIndexProvider.notifier).state = 0;
+
+                    // ❌ CLOSE BOTTOM SHEET
+                    if (context.mounted) {
+                      context.pop(true);
+                      context.go('/home');
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryDark,
                     shape: RoundedRectangleBorder(

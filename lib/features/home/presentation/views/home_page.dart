@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/features/notification/presentation/views/notification_page.dart';
 import 'package:gaver_des/features/profile/presentation/views/profile_page.dart';
 
+import '../../../../core/navigation/tab_index_provider.dart';
 import '../../../task/presentation/views/task_page.dart';
 import 'dashboard_page.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   final bool showFinishSnackBar;
 
   const HomePage({super.key, this.showFinishSnackBar = false});
 
   @override
-  State<HomePage> createState() => HomePageState();
+  ConsumerState<HomePage> createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage> {
-  int currentIndex = 0;
-
+class HomePageState extends ConsumerState<HomePage> {
   late final List<Widget> pages;
 
   @override
@@ -25,7 +25,7 @@ class HomePageState extends State<HomePage> {
     super.initState();
 
     pages = [
-      DashboardPage(onGoToTask: () => changeTab(1)),
+      DashboardPage(),
       const TaskPage(),
       const NotificationPage(),
       const ProfilePage(),
@@ -53,18 +53,18 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-  void changeTab(int index) {
-    setState(() => currentIndex = index);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(tabIndexProvider);
+
     return Scaffold(
-      body: pages[currentIndex],
+      body: IndexedStack(index: currentIndex, children: pages),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         backgroundColor: AppColors.white,
-        onTap: changeTab,
+        onTap: (index) {
+          ref.read(tabIndexProvider.notifier).state = index;
+        },
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.grey3,
         type: BottomNavigationBarType.fixed,

@@ -17,7 +17,7 @@ final taskResponseProvider =
         case TaskFilter.pickup:
           return repo.getPickUpTasks(
             driverId: driverId,
-            status: 'active',
+            status: 'assigned',
             search: '',
           );
         case TaskFilter.delivery:
@@ -36,7 +36,7 @@ final taskPickupCountProvider = FutureProvider.autoDispose<int>((ref) async {
   final repo = ref.read(taskRepositoryProvider);
 
   final res = await repo.getPickUpTasks(
-    status: 'active',
+    status: 'assigned',
     search: '',
     driverId: driverId,
   );
@@ -51,3 +51,21 @@ final taskDeliveryCountProvider = FutureProvider.autoDispose<int>((ref) async {
 
   return res.totalData;
 });
+
+final taskDashboardResponseProvider =
+    FutureProvider.autoDispose<BaseResponse<List<TaskModel>>>((ref) async {
+      final driverId = ref.watch(userIdProvider);
+      final repo = ref.read(taskRepositoryProvider);
+
+      return repo.getPickUpTasks(
+        driverId: driverId,
+        status: 'active',
+        search: '',
+      );
+    });
+
+final taskDashboardProvider = FutureProvider.autoDispose<List<TaskEntity>>(
+  (ref) => ref
+      .watch(taskDashboardResponseProvider)
+      .maybeWhen(data: (res) => res.data, orElse: () => []),
+);

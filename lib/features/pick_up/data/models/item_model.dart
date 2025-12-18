@@ -4,6 +4,8 @@ class ItemModel {
   final int qty;
   final double weight;
   final String uom;
+  final String productOption;
+  final double actualWeight;
 
   ItemModel({
     required this.id,
@@ -11,6 +13,8 @@ class ItemModel {
     required this.qty,
     required this.weight,
     required this.uom,
+    required this.productOption,
+    required this.actualWeight,
   });
 
   factory ItemModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +24,8 @@ class ItemModel {
       qty: json['qty'] ?? 0,
       weight: (json['actualKg'] as num?)?.toDouble() ?? 0,
       uom: json['uom']?['symbol'] ?? '-',
+      productOption: json['productOption'] ?? '-',
+      actualWeight: (json['actualKg'] as num?)?.toDouble() ?? 0,
     );
   }
 }

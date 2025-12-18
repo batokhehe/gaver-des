@@ -11,4 +11,8 @@ class PickUpApi {
 
     return PickupModel.fromJson(response.data['data'] as Map<String, dynamic>);
   }
+
+  Future<void> updateStatus(int id, String status) async {
+    await dio.put('/pickup-orders/$id', data: {'status': status});
+  }
 }

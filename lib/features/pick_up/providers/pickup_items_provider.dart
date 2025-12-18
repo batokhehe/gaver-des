@@ -20,3 +20,34 @@ final pickupProvider = FutureProvider.family<PickUpEntity, int>((ref, id) {
   final repo = ref.read(pickUpRepositoryProvider);
   return repo.getPickUp(id);
 });
+
+final pickupActionControllerProvider =
+    StateNotifierProvider<PickupActionController, AsyncValue<void>>(
+      (ref) => PickupActionController(ref),
+    );
+
+class PickupActionController extends StateNotifier<AsyncValue<void>> {
+  final Ref ref;
+
+  PickupActionController(this.ref) : super(const AsyncData(null));
+
+  Future<void> startPickup(int id) async {
+    state = const AsyncLoading();
+    try {
+      await ref.read(pickUpRepositoryProvider).api.updateStatus(id, 'on_progress');
+      state = const AsyncData(null);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+
+  Future<void> finishPickup(int id) async {
+    state = const AsyncLoading();
+    try {
+      await ref.read(pickUpRepositoryProvider).api.updateStatus(id, 'finished');
+      state = const AsyncData(null);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+}

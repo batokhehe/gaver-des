@@ -3,7 +3,7 @@ import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../pick_up/presentation/views/pick_up_detail_page.dart';
+import '../../../pick_up/presentation/views/pick_up_form_page.dart';
 
 class TaskCard extends StatelessWidget {
   final int id;
@@ -106,7 +106,7 @@ class TaskCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

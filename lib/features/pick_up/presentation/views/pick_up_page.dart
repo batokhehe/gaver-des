@@ -6,7 +6,9 @@ import 'package:gaver_des/features/pick_up/domain/entities/pick_up_entity.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/item_card.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/navigation/tab_index_provider.dart';
 import '../../../task/presentation/widgets/task_card.dart';
+import '../../../task/providers/task_viewmodel.dart';
 import '../../domain/entities/item_entity.dart';
 import '../../providers/pickup_items_provider.dart';
 
@@ -22,11 +24,11 @@ class PickUpPage extends ConsumerStatefulWidget {
 class _PickUpPageState extends ConsumerState<PickUpPage> {
   @override
   Widget build(BuildContext context) {
-    final pickUp = ref.watch(pickupProvider(widget.id));
+    final dataAsync = ref.watch(pickupProvider(widget.id));
 
     return Scaffold(
       backgroundColor: AppColors.greyBg,
-      body: pickUp.when(
+      body: dataAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (detail) {
@@ -133,7 +135,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
         final item = items[index];
 
         return ItemCard(
-          code: "ITEM-${item.id}",
+          code: item.productOption,
           name: item.name,
           status: "Pick up",
           statusColor: Colors.orange,
@@ -159,7 +161,24 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
             ),
           ),
           onPressed: () async {
-            context.push('/pick-up-detail');
+            final id = widget.id;
+
+            await ref
+                .read(pickupActionControllerProvider.notifier)
+                .startPickup(id);
+
+            final state = ref.read(pickupActionControllerProvider);
+
+            if (state.hasError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Gagal memulai tugas')),
+              );
+              return;
+            }
+
+            ref.refresh(taskDashboardResponseProvider.future);
+            ref.read(tabIndexProvider.notifier).state = 0;
+            context.go('/home');
           },
           child: const Text(
             "Mulai Tugas",

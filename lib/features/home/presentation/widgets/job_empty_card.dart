@@ -4,7 +4,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 
 class JobEmptyCard extends StatelessWidget {
-  const JobEmptyCard({super.key});
+  final String type;
+  final VoidCallback onTap;
+
+  const JobEmptyCard({super.key, required this.type, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +32,7 @@ class JobEmptyCard extends StatelessWidget {
 
                   children: [
                     Text(
-                      'Tidak Ada Delivery Aktif',
+                      'Tidak Ada $type Aktif',
                       style: AppTypography.smallBoldWhite,
                     ),
                     Text(
@@ -41,7 +44,7 @@ class JobEmptyCard extends StatelessWidget {
               ],
             ),
           ),
-          const JobActiveDetail(),
+          JobActiveDetail(type: type, onTap: onTap),
         ],
       ),
     );
@@ -49,50 +52,54 @@ class JobEmptyCard extends StatelessWidget {
 }
 
 class JobActiveDetail extends StatelessWidget {
-  const JobActiveDetail({super.key});
+  final String type;
+  final VoidCallback onTap;
+
+  const JobActiveDetail({super.key, required this.type, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
-        ),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+    return InkWell(
+      onTap: onTap,
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(16),
+        bottomRight: Radius.circular(16),
       ),
-      child: Row(
-        children: [
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Ambil Tugas Delivery Sekarang',
-                  style: AppTypography.smallNormalBlack,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ],
-            ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
           ),
-          Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: AppColors.primaryDark,
-              shape: BoxShape.circle,
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Ambil Tugas $type Sekarang',
+                style: AppTypography.smallNormalBlack,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            child: const Icon(
-              Icons.arrow_forward,
-              color: Colors.white,
-              size: 16,
+            Container(
+              width: 24,
+              height: 24,
+              decoration: const BoxDecoration(
+                color: AppColors.primaryDark,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward,
+                color: Colors.white,
+                size: 16,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

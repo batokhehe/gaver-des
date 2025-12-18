@@ -14,4 +14,9 @@ class PickUpRepositoryImpl implements PickUpRepository {
     final model = await api.fetchPickupDetail(id);
     return model.toEntity();
   }
+
+  @override
+  Future<void> updateStatusPickUp(int id, String status) async {
+    await api.updateStatus(id, status);
+  }
 }

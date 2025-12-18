@@ -20,6 +20,8 @@ extension PickupMapper on PickupModel {
               qty: e.qty,
               weight: e.weight,
               uom: e.uom,
+              productOption: e.productOption,
+              actualWeight: e.actualWeight,
             ),
           )
           .toList(),

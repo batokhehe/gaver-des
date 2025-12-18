@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gaver_des/features/pick_up/presentation/views/pick_up_detail_page.dart';
+import 'package:gaver_des/features/pick_up/presentation/views/pick_up_form_page.dart';
 import 'package:gaver_des/features/pick_up/presentation/views/pick_up_page.dart';
 import 'package:go_router/go_router.dart';
 
@@ -78,6 +78,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final id = int.parse(state.pathParameters['id']!);
           return PickUpPage(id: id);
+        },
+      ),
+      GoRoute(
+        path: '/pickup-form/:id',
+        name: 'pickup-form',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return PickUpFormPage(id: id);
         },
       ),
       GoRoute(

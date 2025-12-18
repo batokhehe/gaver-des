@@ -1,6 +1,10 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaver_des/features/pick_up/domain/entities/item_entity.dart';
+import 'package:gaver_des/features/pick_up/domain/entities/pick_up_entity.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/delete_bottom_sheet.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/digital_sign_bottom_sheet.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/finish_confirmation_bottom_sheet.dart';
@@ -10,39 +14,45 @@ import '../../../../core/helpers/permission_helper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../task/presentation/widgets/task_card.dart';
-import '../../data/models/item_detail.dart';
-import '../widgets/add_item_bottom_sheet.dart';
+import '../../providers/pickup_items_provider.dart';
 import '../widgets/item_card_with_checkbox.dart';
 import '../widgets/receipt_preview_bottom_sheet.dart';
+import '../widgets/signature_preview_bottom_sheet.dart';
 
-class PickUpDetailPage extends StatefulWidget {
-  const PickUpDetailPage({super.key, required String id});
+class PickUpFormPage extends ConsumerStatefulWidget {
+  final int id;
+
+  const PickUpFormPage({super.key, required this.id});
 
   @override
-  State<PickUpDetailPage> createState() => _PickUpDetailPageState();
+  ConsumerState<PickUpFormPage> createState() => _PickUpFormPageState();
 }
 
-class _PickUpDetailPageState extends State<PickUpDetailPage> {
-  List<ItemDetail> items = [
-    ItemDetail(
-      name: "Minyak Goreng Kemasan 2L (Box 6 pcs)",
-      total: 12,
-      weight: 144,
-    ),
-    ItemDetail(name: "Tepung Terigu Premium 25kg", total: 8, weight: 200),
-    ItemDetail(name: "Air Mineral Galon 19L", total: 10, weight: 190),
-  ];
+class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
+  final Map<int, bool> checkedItems = {};
   String? receiptImagePath;
+  List<ItemEntity>? _localItems;
+
+  String? handedBySignatureBase64;
+  String? receivedBySignatureBase64;
 
   @override
   Widget build(BuildContext context) {
+    final dataAsync = ref.watch(pickupProvider(widget.id));
+
     return Scaffold(
       backgroundColor: const Color(0xffF5F5F5),
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(child: Stack(children: [_buildContent()])),
-        ],
+      body: dataAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text(e.toString())),
+        data: (detail) {
+          return Column(
+            children: [
+              _buildHeader(),
+              Expanded(child: Stack(children: [_buildContent(detail)])),
+            ],
+          );
+        },
       ),
     );
   }
@@ -87,7 +97,7 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(PickUpEntity detail) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -103,59 +113,27 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
-
               _sectionTitle("Informasi Pengiriman"),
               const SizedBox(height: 8),
-              _buildPickUpInfo(),
+              _buildPickUpHeader(detail),
 
               const SizedBox(height: 16),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _sectionTitle("Daftar Barang"),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final result = await AddItemBottomSheet.show(context);
+              _sectionTitle("Daftar Barang"),
+              const SizedBox(height: 8),
+              _buildItemList(detail.items),
 
-                      if (result != null) {
-                        setState(() {
-                          items.add(
-                            ItemDetail(
-                              name: result["name"],
-                              total: int.parse(result["total"]),
-                              weight: double.parse(result["weight"]),
-                            ),
-                          );
-                        });
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: AppColors.primaryShade,
-                      padding: const EdgeInsets.all(8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      "+ Tambah Barang",
-                      style: AppTypography.xSmallNormalPrimary,
-                    ),
-                  ),
-                ],
-              ),
-              _buildItemList(),
               const SizedBox(height: 12),
               _sectionTitle("Form Serah Terima (Opsional)"),
               const SizedBox(height: 12),
               _buildHandoverForm(),
+
               const SizedBox(height: 12),
               _sectionTitle("Bukti Pengiriman"),
               const SizedBox(height: 12),
               _buildReceiptForm(),
-              const SizedBox(height: 12),
+
+              const SizedBox(height: 16),
               _buildBottomButton(),
             ],
           ),
@@ -174,44 +152,49 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
     );
   }
 
-  Widget _buildPickUpInfo() {
+  Widget _buildPickUpHeader(PickUpEntity detail) {
     return TaskCard(
-      id: 0,
-      code: "PKO.2025.11.0002",
+      id: detail.id,
+      code: detail.code,
       hub: "Hub Jakarta Selatan",
-      status: "Pick up",
+      status: detail.status,
       statusColor: Colors.orange,
-      item: 3,
-      vendor: "UD. Cahaya Ekspres",
-      address: "Jl. Merdeka Timur No. 88, Jakarta Pusat",
+      item: detail.items.length,
+      vendor: detail.vendor ?? "-",
+      address: detail.address ?? "-",
       isShowBottomNext: false,
     );
   }
 
-  Widget _buildItemList() {
+  Widget _buildItemList(List<ItemEntity> items) {
+    _localItems ??= List.from(items);
+
     return Column(
-      children: [
-        for (int i = 0; i < items.length; i++)
-          ItemCardWithCheckbox(
-            name: items[i].name,
-            total: items[i].total.toString(),
-            weight: items[i].weight.toString(),
-            checked: items[i].checked,
-            onChecked: (value) {
+      children: List.generate(_localItems!.length, (i) {
+        final item = _localItems![i];
+        final checked = checkedItems[item.id] ?? false;
+
+        return ItemCardWithCheckbox(
+          name: item.name,
+          total: "${item.qty} ${item.uom}",
+          weight: "${item.weight} ${item.uom}",
+          checked: checked,
+          onChecked: (value) {
+            setState(() {
+              checkedItems[item.id] = value;
+            });
+          },
+          onDelete: () async {
+            final confirm = await _showDeleteConfirmation(context);
+            if (confirm == true) {
               setState(() {
-                items[i].checked = value;
+                _localItems!.removeAt(i);
+                checkedItems.remove(item.id);
               });
-            },
-            onDelete: () async {
-              final confirm = await _showDeleteConfirmation(context);
-              if (confirm == true) {
-                setState(() {
-                  items.removeAt(i);
-                });
-              }
-            },
-          ),
-      ],
+            }
+          },
+        );
+      }),
     );
   }
 
@@ -227,9 +210,21 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _formSignField("Diserahkan Oleh", "Toko Andalan Sejahtera"),
+          _formSignField(
+            "Diserahkan Oleh",
+            "Toko Andalan Sejahtera",
+            signatureBase64: handedBySignatureBase64,
+            onSaved: (v) => setState(() => handedBySignatureBase64 = v),
+          ),
+
           const SizedBox(height: 12),
-          _formSignField("Diterima Oleh", "Garuda Verdana"),
+
+          _formSignField(
+            "Diterima Oleh",
+            "Garuda Verdana",
+            signatureBase64: receivedBySignatureBase64,
+            onSaved: (v) => setState(() => receivedBySignatureBase64 = v),
+          ),
           const SizedBox(height: 16),
           _orangeButton("Preview Serah Terima", () {}),
         ],
@@ -237,7 +232,14 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
     );
   }
 
-  Widget _formSignField(String title, String name) {
+  Widget _formSignField(
+    String title,
+    String name, {
+    required String? signatureBase64,
+    required ValueChanged<String> onSaved,
+  }) {
+    final hasSignature = signatureBase64 != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -258,19 +260,20 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
               Expanded(child: Text(name)),
               InkWell(
                 onTap: () async {
-                  final result = await showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    isScrollControlled: true,
-                    builder: (context) => const DigitalSignBottomSheet(),
-                  );
+                  if (hasSignature) {
+                    _showSignaturePreview(signatureBase64!, onSaved);
+                  } else {
+                    final result = await showModalBottomSheet<Uint8List>(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      isScrollControlled: true,
+                      builder: (_) => const DigitalSignBottomSheet(),
+                    );
 
-                  if (result != null) {
-                    final base64Sig = base64Encode(result);
-                    print("TTD BASE64: $base64Sig");
-
-                    // TODO: lakukan sesuatu dengan tanda tangan
-                    // setState(() => signatureBase64 = base64Sig);
+                    if (result != null) {
+                      final base64 = base64Encode(result);
+                      onSaved(base64);
+                    }
                   }
                 },
                 borderRadius: BorderRadius.circular(6),
@@ -282,14 +285,14 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
                   ),
                   child: Row(
                     children: [
-                      Image.asset(
-                        'assets/icons/ic_magic_pen.png',
-                        width: 16,
-                        height: 16,
+                      Icon(
+                        hasSignature ? Icons.visibility : Icons.edit,
+                        size: 16,
+                        color: AppColors.primary,
                       ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        "TTD",
+                      const SizedBox(width: 8),
+                      Text(
+                        hasSignature ? "Lihat TTD" : "TTD",
                         style: AppTypography.xSmallNormalPrimary,
                       ),
                     ],
@@ -445,12 +448,39 @@ class _PickUpDetailPageState extends State<PickUpDetailPage> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => const FinishConfirmationBottomSheet(),
+      builder: (_) => FinishConfirmationBottomSheet(pickupId: widget.id),
     );
 
     if (result == true && context.mounted) {
       if (result == true && context.mounted) {
         context.go('/home?finished=true');
+      }
+    }
+  }
+
+  void _showSignaturePreview(
+    String base64,
+    ValueChanged<String> onResign,
+  ) async {
+    final bytes = base64Decode(base64);
+
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => SignaturePreviewBottomSheet(imageBytes: bytes),
+    );
+
+    if (action == 'retake') {
+      final result = await showModalBottomSheet<Uint8List>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (_) => const DigitalSignBottomSheet(),
+      );
+
+      if (result != null) {
+        onResign(base64Encode(result));
       }
     }
   }

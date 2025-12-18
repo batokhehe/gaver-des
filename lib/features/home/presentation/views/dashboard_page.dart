@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/navigation/tab_index_provider.dart';
+import '../../../task/providers/task_viewmodel.dart';
 import '../../../user/providers/user_provider.dart';
 import '../../../user/providers/user_repository_provider.dart';
 import '../widgets/daily_recap_section.dart';
@@ -13,9 +16,7 @@ import '../widgets/task_info_bottom_sheet.dart';
 import '../widgets/vehicle_card.dart';
 
 class DashboardPage extends ConsumerWidget {
-  final VoidCallback onGoToTask;
-
-  const DashboardPage({super.key, required this.onGoToTask});
+  const DashboardPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,12 +25,15 @@ class DashboardPage extends ConsumerWidget {
     final email = ref.watch(userEmailProvider);
     final vehicle = ref.watch(userVehicleProvider);
 
+    final tasksAsync = ref.watch(taskDashboardProvider);
+
     return Scaffold(
       backgroundColor: AppColors.greyBg,
       body: RefreshIndicator(
         onRefresh: () async {
           await ref.read(userRepositoryProvider).fetchUserFromApi();
           await ref.refresh(userProvider.future);
+          await ref.refresh(taskDashboardResponseProvider.future);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -70,17 +74,43 @@ class DashboardPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       sectionTitle("Pekerjaan Aktif"),
-                      hasActiveJob
-                          ? JobActiveCard(
-                              job: null,
-                              onOpenTask: () {
-                                _showTaskInfoDialog(context, onGoToTask);
+                      tasksAsync.when(
+                        loading: () => const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          child: SizedBox(height: 120),
+                        ),
+                        error: (_, __) => JobEmptyCard(
+                          type: 'Pick Up',
+                          onTap: () {
+                            ref.read(tabIndexProvider.notifier).state = 1;
+                          },
+                        ),
+                        data: (tasks) {
+                          if (tasks.isEmpty) {
+                            return JobEmptyCard(
+                              type: 'Pick Up',
+                              onTap: () {
+                                ref.read(tabIndexProvider.notifier).state = 1;
                               },
-                            )
-                          : const JobEmptyCard(),
-                      const SizedBox(height: 16),
+                            );
+                          }
+                          return JobActiveCard(
+                            job: tasks[0],
+                            type: 'Pick Up',
+                            onOpenTask: () {
+                              context.push('/pickup-form/${tasks[0].id}');
+                            },
+                          );
+                        },
+                      ),
 
-                      const JobEmptyCard(),
+                      const SizedBox(height: 16),
+                      JobEmptyCard(
+                        type: 'Delivery',
+                        onTap: () {
+                          ref.read(tabIndexProvider.notifier).state = 1;
+                        },
+                      ),
                       const SizedBox(height: 16),
 
                       sectionTitle("Rekap Harian"),

@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:gaver_des/features/home/domain/entities/job.dart';
+import 'package:gaver_des/features/task/domain/entities/task_entity.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 
 class JobActiveCard extends StatelessWidget {
-  const JobActiveCard({super.key, required Job? job, required this.onOpenTask});
-
+  final TaskEntity job;
+  final String type;
   final VoidCallback onOpenTask;
+
+  const JobActiveCard({
+    super.key,
+    required this.job,
+    required this.type,
+    required this.onOpenTask,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,24 +34,37 @@ class JobActiveCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'PKO.2025.11.0001',
-                      style: AppTypography.smallBoldWhite,
-                    ),
-                    Text(
-                      'Jl. Melati No. 12, Jakarta Timur ',
-                      style: AppTypography.smallNormalWhite,
-                    ),
-                  ],
+                // KODE + ALAMAT SINGKAT
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        job.code,
+                        style: AppTypography.smallBoldWhite,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        job.address,
+                        style: AppTypography.smallNormalWhite,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
                 ),
-                CardPickupInfo(),
+
+                CardPickupInfo(type: type, itemCount: job.itemCount),
               ],
             ),
           ),
-          JobActiveDetail(onOpenTask: onOpenTask),
+
+          JobActiveDetail(
+            vendor: job.vendor,
+            address: job.address,
+            onOpenTask: onOpenTask,
+          ),
         ],
       ),
     );
@@ -52,11 +72,19 @@ class JobActiveCard extends StatelessWidget {
 }
 
 class CardPickupInfo extends StatelessWidget {
-  const CardPickupInfo({super.key});
+  final String type;
+  final int itemCount;
+
+  const CardPickupInfo({
+    super.key,
+    required this.type,
+    required this.itemCount,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -64,19 +92,26 @@ class CardPickupInfo extends StatelessWidget {
             color: Colors.white.withOpacity(0.25),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Text('Pick Up', style: AppTypography.xSmallNormalWhite),
+          child: Text(type, style: AppTypography.xSmallNormalWhite),
         ),
-        const SizedBox(height: 2),
-        const Text('20 Barang', style: AppTypography.xSmallNormalWhite),
+        const SizedBox(height: 4),
+        Text('$itemCount Barang', style: AppTypography.xSmallNormalWhite),
       ],
     );
   }
 }
 
 class JobActiveDetail extends StatelessWidget {
+  final String vendor;
+  final String address;
   final VoidCallback onOpenTask;
 
-  const JobActiveDetail({super.key, required this.onOpenTask});
+  const JobActiveDetail({
+    super.key,
+    required this.vendor,
+    required this.address,
+    required this.onOpenTask,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -93,17 +128,18 @@ class JobActiveDetail extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'PT. Sinar Logistik Nusantara',
+                  vendor,
                   style: AppTypography.smallBoldBlack,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Jl. Gatot Subroto Blok B3 No. 12, Jakarta Selatan',
+                  address,
                   style: AppTypography.smallNormalBlack,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,

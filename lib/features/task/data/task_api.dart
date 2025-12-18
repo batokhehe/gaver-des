@@ -20,7 +20,7 @@ class TaskApi {
         'page': page,
         // 'driverId': driverId,
         'limit': 10,
-        // 'status': status,
+        'status': status,
         'search': search,
       },
     );
