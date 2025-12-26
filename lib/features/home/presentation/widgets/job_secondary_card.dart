@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gaver_des/core/theme/app_typography.dart';
 import 'package:gaver_des/features/home/domain/entities/job.dart';
-import '../../../../core/theme/app_text.dart';
+import '../../../../core/theme/app_string.dart';
 
 class JobSecondaryCard extends StatelessWidget {
   final Job job;
@@ -18,9 +19,9 @@ class JobSecondaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(job.title, style: AppText.bold18),
+            Text(job.title, style: AppTypography.mediumBoldBlack),
             const SizedBox(height: 4),
-            Text(job.address, style: AppText.regularGrey),
+            Text(job.address, style: AppTypography.smallNormalGrey),
           ],
         ),
       ),

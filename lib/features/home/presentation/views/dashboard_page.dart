@@ -25,7 +25,7 @@ class DashboardPage extends ConsumerWidget {
     final email = ref.watch(userEmailProvider);
     final vehicle = ref.watch(userVehicleProvider);
 
-    final tasksAsync = ref.watch(taskDashboardProvider);
+    final dashboardAsync = ref.watch(taskDashboardResponseProvider);
 
     return Scaffold(
       backgroundColor: AppColors.greyBg,
@@ -55,7 +55,17 @@ class DashboardPage extends ConsumerWidget {
                   HeaderSection(
                     header: fullName,
                     isTransparent: true,
-                    subHeader: 'Anda memiliki 1 tugas aktif hari ini',
+                    subHeader: dashboardAsync.when(
+                      loading: () => 'Memuat tugas hari ini...',
+                      error: (_, __) => 'Gagal memuat tugas',
+                      data: (res) {
+                        final count = res.totalData;
+                        if (count == 0) {
+                          return 'Anda belum memiliki tugas aktif hari ini';
+                        }
+                        return 'Anda memiliki $count tugas aktif hari ini';
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -74,7 +84,7 @@ class DashboardPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       sectionTitle("Pekerjaan Aktif"),
-                      tasksAsync.when(
+                      dashboardAsync.when(
                         loading: () => const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 20),
                           child: SizedBox(height: 120),
@@ -86,7 +96,7 @@ class DashboardPage extends ConsumerWidget {
                           },
                         ),
                         data: (tasks) {
-                          if (tasks.isEmpty) {
+                          if (tasks.totalData == 0) {
                             return JobEmptyCard(
                               type: 'Pick Up',
                               onTap: () {
@@ -95,10 +105,12 @@ class DashboardPage extends ConsumerWidget {
                             );
                           }
                           return JobActiveCard(
-                            job: tasks[0],
+                            job: tasks.data.first,
                             type: 'Pick Up',
                             onOpenTask: () {
-                              context.push('/pickup-form/${tasks[0].id}');
+                              context.push(
+                                '/pickup-form/${tasks.data.first.id}',
+                              );
                             },
                           );
                         },

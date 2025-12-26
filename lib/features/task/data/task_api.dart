@@ -10,7 +10,7 @@ class TaskApi {
 
   Future<BaseResponse<List<TaskModel>>> fetchPickUp({
     required String status,
-    String search = '',
+    required String search,
     required int driverId,
     int page = 1,
   }) async {
@@ -18,10 +18,12 @@ class TaskApi {
       '/pickup-orders',
       queryParameters: {
         'page': page,
-        // 'driverId': driverId,
         'limit': 10,
-        'status': status,
         'search': search,
+        'status': status,
+        'sortCol': 'pickupDate',
+        'sortOrder': 'asc',
+        'driverId': driverId,
       },
     );
 
@@ -36,6 +38,7 @@ class TaskApi {
   Future<BaseResponse<List<TaskModel>>> fetchDelivery({
     required String status,
     required String search,
+    required int driverId,
     int page = 1,
   }) async {
     final response = await dio.get(
@@ -47,6 +50,7 @@ class TaskApi {
         'status': status,
         'sortCol': 'pickupDate',
         'sortOrder': 'asc',
+        'driverId': driverId,
       },
     );
 

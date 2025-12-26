@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaver_des/core/theme/app_string.dart';
+import 'package:gaver_des/core/theme/app_typography.dart';
 
 import '../app/router.dart';
 import 'auth/providers/auth_provider.dart';
@@ -33,14 +35,27 @@ class _SplashPageState extends ConsumerState<SplashPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
-        fit: StackFit.expand,
         children: [
-          Image.asset("assets/images/bg_splash.png", fit: BoxFit.cover),
-          Center(
-            child: Text(
-              "GaVer 1.0.0",
-              style: TextStyle(color: Colors.white, fontSize: 12),
+          Positioned.fill(
+            child: Image.asset(
+              "assets/images/bg_splash.png",
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Text(
+                AppString.appVersion,
+                textAlign: TextAlign.center,
+                style: AppTypography.smallNormalGrey,
+              ),
             ),
           ),
         ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaver_des/core/theme/app_string.dart';
 import 'package:gaver_des/core/widgets/error_dialog.dart';
 import 'package:go_router/go_router.dart';
 
@@ -210,7 +211,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                   Center(
                     child: Text(
-                      "GaVer 1.0.0",
+                      AppString.appVersion,
                       style: TextStyle(color: Colors.grey),
                     ),
                   ),

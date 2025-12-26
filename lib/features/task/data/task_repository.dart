@@ -13,6 +13,7 @@ abstract class TaskRepository {
   Future<BaseResponse<List<TaskModel>>> getDeliveryTasks({
     required String status,
     required String search,
+    required int driverId,
     int page = 1,
   });
 }

@@ -31,6 +31,7 @@ class _AddItemBottomSheetState extends State<AddItemBottomSheet> {
       initialChildSize: 0.55,
       minChildSize: 0.55,
       maxChildSize: 0.9,
+      expand: false,
       builder: (context, scrollController) {
         return Container(
           padding: const EdgeInsets.all(20),
@@ -38,29 +39,28 @@ class _AddItemBottomSheetState extends State<AddItemBottomSheet> {
             color: AppColors.greyBg,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          child: SingleChildScrollView(
+          child: ListView(
             controller: scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(context),
+            children: [
+              _buildHeader(context),
 
-                const SizedBox(height: 16),
-                _inputLabel("Nama"),
-                _inputField(nameController, hint: "Tissue Box"),
+              const SizedBox(height: 16),
+              _inputLabel("Nama"),
+              _inputField(nameController, hint: "Tissue Box"),
 
-                const SizedBox(height: 16),
-                _inputLabel("Jumlah Koli"),
-                _inputField(koliController, hint: "1", suffix: "Koli"),
+              const SizedBox(height: 16),
+              _inputLabel("Jumlah Koli"),
+              _inputField(koliController, hint: "1", suffix: "Koli"),
 
-                const SizedBox(height: 16),
-                _inputLabel("Berat Total"),
-                _inputField(weightController, hint: "12", suffix: "Kg"),
+              const SizedBox(height: 16),
+              _inputLabel("Berat Total"),
+              _inputField(weightController, hint: "12", suffix: "Kg"),
 
-                const SizedBox(height: 24),
-                _buildButtons(context),
-              ],
-            ),
+              const SizedBox(height: 24),
+              _buildButtons(context),
+
+              const SizedBox(height: 8), // aman, kecil
+            ],
           ),
         );
       },

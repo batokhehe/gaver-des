@@ -28,8 +28,14 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<BaseResponse<List<TaskModel>>> getDeliveryTasks({
     required String status,
     required String search,
+    required int driverId,
     int page = 1,
   }) {
-    return api.fetchDelivery(status: status, search: search, page: page);
+    return api.fetchDelivery(
+      status: status,
+      search: search,
+      driverId: driverId,
+      page: page,
+    );
   }
 }
