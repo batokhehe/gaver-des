@@ -12,19 +12,20 @@ class GetTasksUseCase {
     required TaskFilter filter,
     required int driverId,
     required String search,
+    required String status,
   }) {
     switch (filter) {
       case TaskFilter.pickup:
         return repository.getPickUpTasks(
           driverId: driverId,
-          status: 'assigned',
+          status: status,
           search: search,
         );
 
       case TaskFilter.delivery:
         return repository.getDeliveryTasks(
           driverId: driverId,
-          status: 'finished',
+          status: status,
           search: search,
         );
     }

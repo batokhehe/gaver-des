@@ -91,7 +91,7 @@ class ItemCardWithCheckbox extends StatelessWidget {
                       Text(total, style: AppTypography.xSmallNormalBlack),
                       const Spacer(),
                       const Text(
-                        "Koli",
+                        "Qty",
                         style: AppTypography.xSmallNormalBlack,
                       ),
                     ],

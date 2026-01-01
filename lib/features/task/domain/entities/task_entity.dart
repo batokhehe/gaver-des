@@ -6,6 +6,7 @@ class TaskEntity {
   final int itemCount;
   final String vendor;
   final String address;
+  final DateTime pickupDate;
 
   TaskEntity({
     required this.id,
@@ -15,5 +16,6 @@ class TaskEntity {
     required this.itemCount,
     required this.vendor,
     required this.address,
+    required this.pickupDate,
   });
 }

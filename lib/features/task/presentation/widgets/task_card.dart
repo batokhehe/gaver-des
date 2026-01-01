@@ -15,6 +15,7 @@ class TaskCard extends StatelessWidget {
   final String vendor;
   final String address;
   final bool isShowBottomNext;
+  final bool isHistory;
 
   const TaskCard({
     super.key,
@@ -27,6 +28,7 @@ class TaskCard extends StatelessWidget {
     required this.vendor,
     required this.address,
     required this.isShowBottomNext,
+    required this.isHistory,
   });
 
   @override
@@ -54,12 +56,19 @@ class TaskCard extends StatelessWidget {
                         color: AppColors.inactiveBorder,
                         shape: BoxShape.circle,
                       ),
-                      child: Image.asset(
-                        "assets/icons/ic_box_time.png",
-                        width: 20,
-                        height: 20,
-                        fit: BoxFit.contain,
-                      ),
+                      child: isHistory
+                          ? Image.asset(
+                              "assets/icons/ic_box_check.png",
+                              width: 35,
+                              height: 35,
+                              fit: BoxFit.contain,
+                            )
+                          : Image.asset(
+                              "assets/icons/ic_box_time.png",
+                              width: 20,
+                              height: 20,
+                              fit: BoxFit.contain,
+                            ),
                     ),
                   ],
                 ),
@@ -123,7 +132,9 @@ class TaskCard extends StatelessWidget {
                         InkWell(
                           borderRadius: BorderRadius.circular(20),
                           onTap: () {
-                            context.push('/pickup-detail/$id');
+                            context.push(
+                              '/pickup-detail/$id?history=$isHistory',
+                            );
                           },
                           child: Image.asset(
                             "assets/icons/ic_arrow_forward.png",

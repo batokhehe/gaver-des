@@ -8,6 +8,7 @@ import 'package:gaver_des/features/pick_up/domain/entities/pick_up_entity.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/delete_bottom_sheet.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/digital_sign_bottom_sheet.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/finish_confirmation_bottom_sheet.dart';
+import 'package:gaver_des/features/task/domain/entities/task_entity.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/helpers/permission_helper.dart';
@@ -81,7 +82,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
           child: Row(
             children: [
               GestureDetector(
-                onTap: () {},
+                onTap: () => Navigator.pop(context),
                 child: Icon(Icons.arrow_back, color: Colors.white),
               ),
               SizedBox(width: 12),
@@ -169,7 +170,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
               const SizedBox(height: 12),
               _sectionTitle("Form Serah Terima (Opsional)"),
               const SizedBox(height: 12),
-              _buildHandoverForm(),
+              _buildHandoverForm(detail),
 
               const SizedBox(height: 12),
               _sectionTitle("Bukti Pengiriman"),
@@ -199,13 +200,14 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
     return TaskCard(
       id: detail.id,
       code: detail.code,
-      hub: "Hub Jakarta Selatan",
+      hub: detail.hub,
       status: detail.status,
       statusColor: Colors.orange,
       item: detail.items.length,
-      vendor: detail.vendor ?? "-",
-      address: detail.address ?? "-",
+      vendor: detail.vendor,
+      address: detail.address,
       isShowBottomNext: false,
+      isHistory: false,
     );
   }
 
@@ -239,7 +241,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
     );
   }
 
-  Widget _buildHandoverForm() {
+  Widget _buildHandoverForm(PickUpEntity detail) {
     return Container(
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -253,7 +255,9 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         children: [
           _formSignField(
             "Diserahkan Oleh",
-            "Toko Andalan Sejahtera",
+            "Garuda Verdana",
+            "owner",
+            detail.id,
             signatureBase64: handedBySignatureBase64,
             onSaved: (v) => setState(() => handedBySignatureBase64 = v),
           ),
@@ -262,12 +266,14 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
           _formSignField(
             "Diterima Oleh",
-            "Garuda Verdana",
+            detail.vendor,
+            "receiver",
+            detail.id,
             signatureBase64: receivedBySignatureBase64,
             onSaved: (v) => setState(() => receivedBySignatureBase64 = v),
           ),
-          const SizedBox(height: 16),
-          _orangeButton("Preview Serah Terima", () {}),
+          // const SizedBox(height: 16),
+          // _orangeButton("Preview Serah Terima", () {}),
         ],
       ),
     );
@@ -275,7 +281,9 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
   Widget _formSignField(
     String title,
-    String name, {
+    String name,
+    String type,
+    int pickupId, {
     required String? signatureBase64,
     required ValueChanged<String> onSaved,
   }) {
@@ -302,13 +310,26 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
               InkWell(
                 onTap: () async {
                   if (hasSignature) {
-                    _showSignaturePreview(signatureBase64!, onSaved);
+                    _showSignaturePreview(
+                      name,
+                      title,
+                      pickupId,
+                      type,
+                      signatureBase64,
+                      onSaved,
+                    );
                   } else {
                     final result = await showModalBottomSheet<Uint8List>(
                       context: context,
                       backgroundColor: Colors.transparent,
                       isScrollControlled: true,
-                      builder: (_) => const DigitalSignBottomSheet(),
+                      useRootNavigator: true,
+                      builder: (_) => DigitalSignBottomSheet(
+                        title: title,
+                        name: name,
+                        pickupId: pickupId,
+                        type: type,
+                      ),
                     );
 
                     if (result != null) {
@@ -364,7 +385,10 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
           if (action == 'retake') {
             if (await PermissionHelper.camera()) {
-              final imagePath = await context.push<String>('/camera');
+              final imagePath = await context.push<String>(
+                '/camera',
+                extra: {"pickupId": widget.id},
+              );
               if (imagePath != null) {
                 setState(() => receiptImagePath = imagePath);
               }
@@ -389,7 +413,10 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
               const SizedBox(height: 12),
               _orangeButton("Unggah Bukti", () async {
                 if (await PermissionHelper.camera()) {
-                  final imagePath = await context.push<String>('/camera');
+                  final imagePath = await context.push<String>(
+                    '/camera',
+                    extra: {"pickupId": widget.id},
+                  );
                   if (imagePath != null) {
                     setState(() => receiptImagePath = imagePath);
                   }
@@ -417,7 +444,10 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
           const SizedBox(height: 10),
           _orangeButton("Unggah Bukti", () async {
             if (await PermissionHelper.camera()) {
-              final imagePath = await context.push<String>('/camera');
+              final imagePath = await context.push<String>(
+                '/camera',
+                extra: {"pickupId": widget.id},
+              );
               if (imagePath != null) {
                 setState(() => receiptImagePath = imagePath);
               }
@@ -500,6 +530,10 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
   }
 
   void _showSignaturePreview(
+    name,
+    title,
+    pickupId,
+    type,
     String base64,
     ValueChanged<String> onResign,
   ) async {
@@ -517,7 +551,13 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         context: context,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
-        builder: (_) => const DigitalSignBottomSheet(),
+        useRootNavigator: true,
+        builder: (_) => DigitalSignBottomSheet(
+          name: name,
+          title: title,
+          pickupId: pickupId,
+          type: type,
+        ),
       );
 
       if (result != null) {

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
@@ -5,7 +6,9 @@ import 'package:gaver_des/core/theme/app_typography.dart';
 import 'package:gaver_des/features/pick_up/domain/entities/pick_up_entity.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/item_card.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/navigation/tab_index_provider.dart';
 import '../../../task/presentation/widgets/task_card.dart';
 import '../../../task/providers/task_viewmodel.dart';
@@ -14,8 +17,9 @@ import '../../providers/pickup_items_provider.dart';
 
 class PickUpPage extends ConsumerStatefulWidget {
   final int id;
+  final bool isHistory;
 
-  const PickUpPage({super.key, required this.id});
+  const PickUpPage({super.key, required this.id, required this.isHistory});
 
   @override
   ConsumerState<PickUpPage> createState() => _PickUpPageState();
@@ -35,7 +39,9 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
           return Column(children: [_buildHeader(), _buildInfo(detail)]);
         },
       ),
-      bottomNavigationBar: _buildBottomButton(),
+      bottomNavigationBar: !widget.isHistory
+          ? _buildBottomButton()
+          : SizedBox(),
     );
   }
 
@@ -60,7 +66,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
           child: Row(
             children: [
               GestureDetector(
-                onTap: () {},
+                onTap: () => Navigator.pop(context),
                 child: Icon(Icons.arrow_back, color: Colors.white),
               ),
               SizedBox(width: 12),
@@ -94,12 +100,38 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            widget.isHistory
+                ? Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.black12),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          QrImageView(data: detail.code, size: 200),
+                          const SizedBox(height: 8),
+                          SelectableText(
+                            detail.code,
+                            style: AppTypography.xSmallNormalBlack,
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : SizedBox(),
+            const SizedBox(height: 8),
             Text("Informasi Pengiriman", style: AppTypography.smallBoldBlack),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             _buildPickUpHeader(detail),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text("Daftar Barang", style: AppTypography.smallBoldBlack),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             _buildItemList(detail.items),
           ],
         ),
@@ -111,13 +143,14 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
     return TaskCard(
       id: detail.id,
       code: detail.code,
-      hub: "Hub Jakarta Selatan",
+      hub: detail.hub,
       status: detail.status,
       statusColor: Colors.orange,
       item: detail.items.length,
-      vendor: detail.vendor ?? "-",
-      address: detail.address ?? "-",
+      vendor: detail.vendor,
+      address: detail.address,
       isShowBottomNext: false,
+      isHistory: false,
     );
   }
 
@@ -139,7 +172,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
           name: item.name,
           status: "Pick up",
           statusColor: Colors.orange,
-          total: "${item.qty} ${item.uom}",
+          total: "${item.qty} Qty",
           weight: "${item.weight} ${item.uom}",
         );
       },
@@ -161,25 +194,48 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
             ),
           ),
           onPressed: () async {
-            final id = widget.id;
+            try {
+              await ref
+                  .read(pickupActionControllerProvider.notifier)
+                  .startPickup(widget.id);
 
-            await ref
-                .read(pickupActionControllerProvider.notifier)
-                .startPickup(id);
+              ref.refresh(taskDashboardResponseProvider.future);
+              ref.read(tabIndexProvider.notifier).state = 0;
+              context.go('/home');
+            } catch (e) {
+              String message = 'Gagal memulai tugas';
 
-            final state = ref.read(pickupActionControllerProvider);
+              if (e is AppException) {
+                message = e.message;
+              } else if (e is DioException) {
+                final err = e.error;
 
-            if (state.hasError) {
+                if (err is AppException) {
+                  message = err.message;
+                } else {
+                  message =
+                      e.response?.data['message'] ??
+                      e.message ??
+                      'Terjadi kesalahan jaringan';
+                }
+              }
+
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Gagal memulai tugas')),
+                SnackBar(
+                  content: Text(
+                    message,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  backgroundColor: Colors.red.shade600,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               );
-              return;
             }
-
-            ref.refresh(taskDashboardResponseProvider.future);
-            ref.read(tabIndexProvider.notifier).state = 0;
-            context.go('/home');
           },
+
           child: const Text(
             "Mulai Tugas",
             style: TextStyle(

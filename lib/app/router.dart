@@ -77,7 +77,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'pickup-detail',
         builder: (context, state) {
           final id = int.parse(state.pathParameters['id']!);
-          return PickUpPage(id: id);
+          final isHistory = state.uri.queryParameters['history'] == 'true';
+
+          return PickUpPage(id: id, isHistory: isHistory);
         },
       ),
       GoRoute(
@@ -90,13 +92,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/camera',
-        builder: (context, state) => const CameraCapturePage(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          final id = extra['pickupId'] as int;
+
+          return CameraCapturePage(pickupId: id);
+        },
       ),
       GoRoute(
         path: '/receipt-preview',
         builder: (context, state) {
-          final imagePath = state.extra as String;
-          return ReceiptPreviewPage(imagePath: imagePath);
+          final data = state.extra as Map<String, dynamic>;
+          return ReceiptPreviewPage(
+            imagePath: data['path'],
+            pickupId: data['pickupId'],
+          );
         },
       ),
     ],

@@ -1,15 +1,24 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class ReceiptPreviewPage extends StatelessWidget {
-  final String imagePath;
+import '../../providers/pickup_items_provider.dart';
 
-  const ReceiptPreviewPage({super.key, required this.imagePath});
+class ReceiptPreviewPage extends ConsumerWidget {
+  final String imagePath;
+  final int pickupId;
+
+  const ReceiptPreviewPage({
+    super.key,
+    required this.imagePath,
+    required this.pickupId,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Column(
@@ -21,7 +30,7 @@ class ReceiptPreviewPage extends StatelessWidget {
                 Positioned.fill(
                   child: Image.file(File(imagePath), fit: BoxFit.cover),
                 ),
-                _buildConfirmButton(context),
+                _buildConfirmButton(context, ref),
               ],
             ),
           ),
@@ -30,6 +39,7 @@ class ReceiptPreviewPage extends StatelessWidget {
     );
   }
 
+  // ================= HEADER =================
   Widget _buildHeader(BuildContext context) {
     return Stack(
       children: [
@@ -51,7 +61,7 @@ class ReceiptPreviewPage extends StatelessWidget {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: () => context.pop(),
+                  onTap: () => context.pop(), // batal
                   child: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
                 const SizedBox(width: 12),
@@ -71,20 +81,40 @@ class ReceiptPreviewPage extends StatelessWidget {
     );
   }
 
-  Widget _buildConfirmButton(BuildContext context) {
+  // ================= CONFIRM =================
+  Widget _buildConfirmButton(BuildContext context, WidgetRef ref) {
     return Positioned(
       bottom: 40,
       left: 0,
       right: 0,
       child: Center(
         child: GestureDetector(
-          onTap: () {
-            context.pop(imagePath);
+          onTap: () async {
+            try {
+              final bytes = await File(imagePath).readAsBytes();
+              final base64Image = base64Encode(bytes);
+
+              await ref
+                  .read(pickUpApiProvider)
+                  .uploadProof(
+                    pickupOrderId: pickupId,
+                    base64File: base64Image,
+                  );
+
+              context.pop(imagePath);
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Gagal mengunggah bukti pengiriman"),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           },
           child: AnimatedScale(
             scale: 1,
             duration: const Duration(milliseconds: 150),
-            child: Image.asset(width: 100, "assets/icons/ic_take_camera.png"),
+            child: Image.asset("assets/icons/ic_take_camera.png", width: 100),
           ),
         ),
       ),

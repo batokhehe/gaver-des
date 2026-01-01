@@ -34,10 +34,14 @@ class PickupActionController extends StateNotifier<AsyncValue<void>> {
   Future<void> startPickup(int id) async {
     state = const AsyncLoading();
     try {
-      await ref.read(pickUpRepositoryProvider).api.updateStatus(id, 'on_progress');
+      await ref
+          .read(pickUpRepositoryProvider)
+          .api
+          .updateStatus(id, 'on_progress');
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);
+      rethrow;
     }
   }
 

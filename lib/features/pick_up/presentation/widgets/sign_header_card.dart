@@ -3,9 +3,10 @@ import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
 
 class SignHeaderCard extends StatelessWidget {
+  final String title;
   final String name;
 
-  const SignHeaderCard({super.key, required this.name});
+  const SignHeaderCard({super.key, required this.title, required this.name});
 
   @override
   Widget build(BuildContext context) {
@@ -48,10 +49,7 @@ class SignHeaderCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(name, style: AppTypography.smallBoldBlack),
-                    Text(
-                      "Diserahkan Oleh",
-                      style: AppTypography.smallNormalBlack,
-                    ),
+                    Text(title, style: AppTypography.smallNormalBlack),
                   ],
                 ),
               ),

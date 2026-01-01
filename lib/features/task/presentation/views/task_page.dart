@@ -14,12 +14,14 @@ class TaskPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = ref.watch(taskFilterProvider);
 
-    final tasks = ref.watch(activeTaskListProvider);
+    final tasks = ref.watch(taskListProvider);
     final pickupCount = ref.watch(pickupCountProvider);
     final deliveryCount = ref.watch(deliveryCountProvider);
+    final status = ref.watch(taskStatusProvider);
+
     final responseAsync = filter == TaskFilter.pickup
-        ? ref.watch(pickupResponseProvider)
-        : ref.watch(deliveryResponseProvider);
+        ? ref.watch(pickupResponseProvider(status))
+        : ref.watch(deliveryResponseProvider(status));
 
     return Scaffold(
       backgroundColor: AppColors.greyBg,
@@ -31,9 +33,9 @@ class TaskPage extends ConsumerWidget {
             child: RefreshIndicator(
               onRefresh: () async {
                 if (filter == TaskFilter.pickup) {
-                  await ref.refresh(pickupResponseProvider.future);
+                  await ref.refresh(pickupResponseProvider(status).future);
                 } else {
-                  await ref.refresh(deliveryResponseProvider.future);
+                  await ref.refresh(deliveryResponseProvider(status).future);
                 }
               },
               child: responseAsync.when(
@@ -68,6 +70,7 @@ class TaskPage extends ConsumerWidget {
                         vendor: t.vendor,
                         address: t.address,
                         isShowBottomNext: true,
+                        isHistory: false,
                       );
                     },
                   );

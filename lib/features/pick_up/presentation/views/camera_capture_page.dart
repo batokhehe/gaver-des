@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class CameraCapturePage extends StatefulWidget {
-  const CameraCapturePage({super.key});
+  final int pickupId;
+
+  const CameraCapturePage({super.key, required this.pickupId});
 
   @override
   State<CameraCapturePage> createState() => _CameraCapturePageState();
@@ -79,7 +81,7 @@ class _CameraCapturePageState extends State<CameraCapturePage> {
           child: Row(
             children: [
               GestureDetector(
-                onTap: () {},
+                onTap: () => Navigator.pop(context),
                 child: Icon(Icons.arrow_back, color: Colors.white),
               ),
               SizedBox(width: 12),
@@ -125,7 +127,7 @@ class _CameraCapturePageState extends State<CameraCapturePage> {
 
       final result = await context.push<String>(
         '/receipt-preview',
-        extra: picture.path,
+        extra: {"path": picture.path, "pickupId": widget.pickupId},
       );
 
       if (result != null && mounted) {

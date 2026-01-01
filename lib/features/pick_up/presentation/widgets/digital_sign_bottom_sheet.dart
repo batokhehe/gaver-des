@@ -1,21 +1,36 @@
+import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/sign_header_card.dart';
 import 'package:signature/signature.dart';
 
 import '../../../../core/theme/app_typography.dart';
+import '../../providers/pickup_items_provider.dart';
 
-class DigitalSignBottomSheet extends StatefulWidget {
-  const DigitalSignBottomSheet({super.key});
+class DigitalSignBottomSheet extends ConsumerStatefulWidget {
+  final String name;
+  final String title;
+  final int pickupId;
+  final String type;
+
+  const DigitalSignBottomSheet({
+    super.key,
+    required this.name,
+    required this.title,
+    required this.pickupId,
+    required this.type,
+  });
 
   @override
-  State<DigitalSignBottomSheet> createState() => _DigitalSignBottomSheetState();
+  ConsumerState<DigitalSignBottomSheet> createState() =>
+      _DigitalSignBottomSheetState();
 }
 
-class _DigitalSignBottomSheetState extends State<DigitalSignBottomSheet> {
+class _DigitalSignBottomSheetState
+    extends ConsumerState<DigitalSignBottomSheet> {
   final SignatureController _controller = SignatureController(
     penStrokeWidth: 3,
     penColor: Colors.black,
@@ -37,10 +52,7 @@ class _DigitalSignBottomSheetState extends State<DigitalSignBottomSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "Form Serah Terima",
-                style: AppTypography.largeBoldBlack,
-              ),
+              Text(widget.title, style: AppTypography.largeBoldBlack),
               GestureDetector(
                 onTap: () => Navigator.pop(context, null),
                 child: const Icon(Icons.close, size: 24),
@@ -49,7 +61,7 @@ class _DigitalSignBottomSheetState extends State<DigitalSignBottomSheet> {
           ),
 
           const SizedBox(height: 20),
-          SignHeaderCard(name: "UD. Cahaya Ekspres"),
+          SignHeaderCard(title: widget.title, name: widget.name),
           const SizedBox(height: 12),
           Container(
             height: 180,
@@ -100,12 +112,32 @@ class _DigitalSignBottomSheetState extends State<DigitalSignBottomSheet> {
                       return;
                     }
 
-                    final Uint8List? data = await _controller.toPngBytes();
+                    try {
+                      final Uint8List? pngBytes = await _controller
+                          .toPngBytes();
+                      if (pngBytes == null) return;
 
-                    Navigator.pop(
-                      context,
-                      data,
-                    ); // return signature image bytes
+                      final base64Signature = base64Encode(pngBytes);
+
+                      final payload = {
+                        "pickupOrderId": widget.pickupId,
+                        "file": base64Signature,
+                        "type": widget.type,
+                      };
+
+                      await ref
+                          .read(pickUpApiProvider)
+                          .uploadSignature(payload);
+
+                      Navigator.of(context, rootNavigator: true).pop(pngBytes);
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Gagal menyimpan tanda tangan"),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   },
                   child: const Text(
                     "Simpan TTD",

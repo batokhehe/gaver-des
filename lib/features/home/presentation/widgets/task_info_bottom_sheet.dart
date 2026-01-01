@@ -62,6 +62,7 @@ class TaskInfoBottomSheet extends StatelessWidget {
               vendor: task.vendor,
               address: task.address,
               isShowBottomNext: true,
+              isHistory: false,
             ),
           ),
 

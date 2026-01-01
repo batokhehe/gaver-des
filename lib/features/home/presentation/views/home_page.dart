@@ -43,13 +43,57 @@ class HomePageState extends ConsumerState<HomePage> {
 
   void _showFinishSnackBar() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: const Text("Tugas berhasil diselesaikan 🎉"),
+      //     backgroundColor: Colors.green,
+      //     behavior: SnackBarBehavior.floating,
+      //   ),
+      // );
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text("Tugas berhasil diselesaikan 🎉"),
-          backgroundColor: Colors.green,
+          content: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.check_circle, color: Colors.green),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      "Tugas Selesai",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "Anda berhasil menyelesaikan tugas ini.\nSilakan lanjut ke tugas berikutnya.",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF4A4A4A),
           behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.only(
+            top: 16,
+            left: 16,
+            right: 16,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          duration: const Duration(seconds: 3),
         ),
       );
+
     });
   }
 
