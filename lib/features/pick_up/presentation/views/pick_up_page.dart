@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,16 +34,22 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
 
     return Scaffold(
       backgroundColor: AppColors.greyBg,
-      body: dataAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(e.toString())),
-        data: (detail) {
-          return Column(children: [_buildHeader(), _buildInfo(detail)]);
-        },
+      body: SafeArea(
+        top: false,
+        child: dataAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text(e.toString())),
+          data: (detail) {
+            return Column(
+              children: [
+                _buildHeader(),
+                Expanded(child: _buildInfo(detail)), // 🔥 pakai Expanded
+              ],
+            );
+          },
+        ),
       ),
-      bottomNavigationBar: !widget.isHistory
-          ? _buildBottomButton()
-          : SizedBox(),
+      bottomNavigationBar: widget.isHistory ? null : _buildBottomButton(),
     );
   }
 
@@ -97,42 +105,49 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
             topRight: Radius.circular(16),
           ),
         ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.isHistory) _buildQr(detail),
+
+              const SizedBox(height: 8),
+              Text("Informasi Pengiriman", style: AppTypography.smallBoldBlack),
+              const SizedBox(height: 8),
+              _buildPickUpHeader(detail),
+
+              const SizedBox(height: 16),
+              if (widget.isHistory) _buildHandoverForm(detail),
+
+              const SizedBox(height: 16),
+              Text("Daftar Barang", style: AppTypography.smallBoldBlack),
+              const SizedBox(height: 8),
+              _buildItemList(detail.items),
+
+              const SizedBox(height: 80), // 🔥 spacer biar aman
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQr(PickUpEntity detail) {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black12),
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            widget.isHistory
-                ? Center(
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.black12),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          QrImageView(data: detail.code, size: 200),
-                          const SizedBox(height: 8),
-                          SelectableText(
-                            detail.code,
-                            style: AppTypography.xSmallNormalBlack,
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : SizedBox(),
+            QrImageView(data: detail.code, size: 200),
             const SizedBox(height: 8),
-            Text("Informasi Pengiriman", style: AppTypography.smallBoldBlack),
-            const SizedBox(height: 8),
-            _buildPickUpHeader(detail),
-            const SizedBox(height: 16),
-            Text("Daftar Barang", style: AppTypography.smallBoldBlack),
-            const SizedBox(height: 8),
-            _buildItemList(detail.items),
+            SelectableText(detail.code, style: AppTypography.xSmallNormalBlack),
           ],
         ),
       ),
@@ -247,5 +262,60 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildHandoverForm(PickUpEntity detail) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _signatureSection("Diserahkan Oleh", detail.ownerSign),
+          const SizedBox(height: 24),
+          _signatureSection("Diterima Oleh", detail.receiverSign),
+          const SizedBox(height: 24),
+          _signatureSection("Bukti Pengiriman", detail.proof),
+        ],
+      ),
+    );
+  }
+
+  Widget _signatureSection(String title, String? base64) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: AppTypography.xSmallNormalBlack),
+        const SizedBox(height: 6),
+
+        if (base64 == null || base64.isEmpty)
+          const Text(
+            "Tidak ada data",
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          )
+        else
+          _signaturePreview(base64),
+      ],
+    );
+  }
+
+  Widget _signaturePreview(String base64) {
+    try {
+      final bytes = base64Decode(base64);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.memory(bytes, height: 100, fit: BoxFit.contain),
+      );
+    } catch (_) {
+      return const Text(
+        "Gagal memuat gambar",
+        style: TextStyle(color: Colors.red, fontSize: 12),
+      );
+    }
   }
 }

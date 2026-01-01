@@ -13,6 +13,9 @@ extension PickupMapper on PickupModel {
       vendor: vendor,
       address: address,
       hub: hub,
+      ownerSign: ownerSign,
+      receiverSign: receiverSign,
+      proof: proof,
       items: items
           .map(
             (e) => ItemEntity(

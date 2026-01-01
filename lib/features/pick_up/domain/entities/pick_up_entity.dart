@@ -8,6 +8,9 @@ class PickUpEntity {
   final DateTime pickupDate;
   final String vendor;
   final String address;
+  final String ownerSign;
+  final String receiverSign;
+  final String proof;
   final List<ItemEntity> items;
 
   const PickUpEntity({
@@ -19,5 +22,8 @@ class PickUpEntity {
     required this.vendor,
     required this.address,
     required this.items,
+    required this.ownerSign,
+    required this.receiverSign,
+    required this.proof,
   });
 }
