@@ -3,8 +3,6 @@ import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../pick_up/presentation/views/pick_up_form_page.dart';
-
 class TaskCard extends StatelessWidget {
   final int id;
   final String code;

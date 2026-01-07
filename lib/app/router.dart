@@ -1,8 +1,8 @@
-// lib/app/router.dart
 import 'dart:async';
 
 import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/features/pick_up/presentation/views/pick_up_form_page.dart';
 import 'package:gaver_des/features/pick_up/presentation/views/pick_up_page.dart';
@@ -31,6 +31,8 @@ class GoRouterRefreshStream extends ChangeNotifier {
 
 final hasShownSplashProvider = StateProvider<bool>((ref) => false);
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final hasShownSplash = ref.watch(hasShownSplashProvider);
   final authState = ref.watch(authStateProvider);
@@ -38,7 +40,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: "/splash",
 
-    observers: [ChuckerFlutter.navigatorObserver],
+    observers: [ChuckerFlutter.navigatorObserver, routeObserver],
 
     redirect: (context, state) {
       final atSplash = state.matchedLocation == "/splash";

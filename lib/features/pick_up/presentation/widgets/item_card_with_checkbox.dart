@@ -1,23 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
+import 'package:gaver_des/core/widgets/alphanumeric_text_field.dart';
+
+import '../../../../core/widgets/decimal_text_field.dart';
 
 class ItemCardWithCheckbox extends StatelessWidget {
-  final String name;
-  final String total;
-  final String weight;
+  final TextEditingController nameController;
+  final TextEditingController qtyController;
+  final TextEditingController weightController;
   final bool checked;
   final VoidCallback onDelete;
   final ValueChanged<bool> onChecked;
+  final ValueChanged<String> onNameChanged;
+  final ValueChanged<String> onQtyChanged;
+  final ValueChanged<String> onWeightChanged;
 
   const ItemCardWithCheckbox({
     super.key,
-    required this.name,
-    required this.total,
-    required this.weight,
+    required this.nameController,
+    required this.qtyController,
+    required this.weightController,
     required this.checked,
     required this.onDelete,
     required this.onChecked,
+    required this.onNameChanged,
+    required this.onQtyChanged,
+    required this.onWeightChanged,
   });
 
   @override
@@ -47,7 +56,13 @@ class ItemCardWithCheckbox extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Text(name, style: AppTypography.xSmallNormalBlack),
+                      Expanded(
+                        child: AlphanumericTextField(
+                          controller: nameController,
+                          hintText: 'Name',
+                          onChanged: onNameChanged,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -88,12 +103,15 @@ class ItemCardWithCheckbox extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Text(total, style: AppTypography.xSmallNormalBlack),
-                      const Spacer(),
-                      const Text(
-                        "Qty",
-                        style: AppTypography.xSmallNormalBlack,
+                      Expanded(
+                        child: DecimalTextField(
+                          controller: qtyController,
+                          hintText: 'Qty',
+                          onChanged: onQtyChanged,
+                        ),
                       ),
+                      SizedBox(width: 8),
+                      const Text("Qty", style: AppTypography.xSmallNormalBlack),
                     ],
                   ),
                 ),
@@ -114,8 +132,14 @@ class ItemCardWithCheckbox extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Text(weight, style: AppTypography.xSmallNormalBlack),
-                      const Spacer(),
+                      Expanded(
+                        child: DecimalTextField(
+                          controller: weightController,
+                          hintText: 'Weight',
+                          onChanged: onWeightChanged,
+                        ),
+                      ),
+                      SizedBox(width: 8),
                       const Text("Kg", style: AppTypography.xSmallNormalBlack),
                     ],
                   ),
@@ -134,7 +158,6 @@ class ItemCardWithCheckbox extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-
             ],
           ),
         ],

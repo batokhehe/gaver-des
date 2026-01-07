@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
@@ -10,14 +12,29 @@ import '../../../task/providers/task_filter_provider.dart';
 import '../../../task/providers/task_viewmodel.dart';
 import '../widgets/filter_bottom_sheet.dart';
 
-class HistoryPage extends ConsumerWidget {
+class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final filter = ref.watch(taskFilterProvider);
+  ConsumerState<HistoryPage> createState() => _HistoryPageState();
+}
 
+class _HistoryPageState extends ConsumerState<HistoryPage> {
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filter = ref.watch(taskFilterProvider);
     final status = ref.watch(historyStatusProvider);
+    final search = ref.watch(taskSearchProvider);
 
     final responseAsync = filter == TaskFilter.pickup
         ? ref.watch(pickupResponseProvider(status))
@@ -28,8 +45,8 @@ class HistoryPage extends ConsumerWidget {
       body: Column(
         children: [
           _buildHeader(context),
-          _buildSearchBar(),
-          _buildTabs(context, ref, filter),
+          _buildSearchBar(search),
+          _buildTabs(context, filter),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
@@ -66,8 +83,6 @@ class HistoryPage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 16),
-
-                          // ===== DATE HEADER =====
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Text(
@@ -79,10 +94,8 @@ class HistoryPage extends ConsumerWidget {
                               ),
                             ),
                           ),
-
-                          // ===== TASK LIST =====
-                          ...items.map((t) {
-                            return TaskCard(
+                          ...items.map(
+                            (t) => TaskCard(
                               id: t.id,
                               code: t.code,
                               hub: t.hub,
@@ -93,8 +106,8 @@ class HistoryPage extends ConsumerWidget {
                               address: t.address,
                               isShowBottomNext: true,
                               isHistory: true,
-                            );
-                          }),
+                            ),
+                          ),
                         ],
                       );
                     }).toList(),
@@ -149,7 +162,7 @@ class HistoryPage extends ConsumerWidget {
   }
 
   // ================= SEARCH =================
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(String search) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -165,11 +178,28 @@ class HistoryPage extends ConsumerWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.black.withOpacity(0.05)),
           ),
-          child: const TextField(
+          child: TextField(
+            controller: _searchController,
+            onChanged: (value) {
+              _debounce?.cancel();
+              _debounce = Timer(const Duration(milliseconds: 400), () {
+                ref.read(taskSearchProvider.notifier).state = value;
+              });
+            },
             decoration: InputDecoration(
-              prefixIcon: Icon(Icons.search, color: Colors.black45),
+              prefixIcon: const Icon(Icons.search, color: Colors.black45),
               hintText: "Cari Kode Pengiriman",
               border: InputBorder.none,
+              suffixIcon: search.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () {
+                        _debounce?.cancel();
+                        _searchController.clear();
+                        ref.read(taskSearchProvider.notifier).state = '';
+                      },
+                    )
+                  : null,
             ),
           ),
         ),
@@ -177,7 +207,8 @@ class HistoryPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildTabs(BuildContext context, WidgetRef ref, TaskFilter selected) {
+  // ================= TABS =================
+  Widget _buildTabs(BuildContext context, TaskFilter selected) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -187,14 +218,19 @@ class HistoryPage extends ConsumerWidget {
             _tabItem(
               text: 'Pick up',
               selected: selected == TaskFilter.pickup,
-              onTap: () => ref.read(taskFilterProvider.notifier).state =
-                  TaskFilter.pickup,
+              onTap: () {
+                ref.read(taskFilterProvider.notifier).state = TaskFilter.pickup;
+                _clearSearch();
+              },
             ),
             _tabItem(
               text: 'Delivery',
               selected: selected == TaskFilter.delivery,
-              onTap: () => ref.read(taskFilterProvider.notifier).state =
-                  TaskFilter.delivery,
+              onTap: () {
+                ref.read(taskFilterProvider.notifier).state =
+                    TaskFilter.delivery;
+                _clearSearch();
+              },
             ),
             const Spacer(),
             InkWell(
@@ -219,6 +255,12 @@ class HistoryPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  void _clearSearch() {
+    _debounce?.cancel();
+    _searchController.clear();
+    ref.read(taskSearchProvider.notifier).state = '';
   }
 
   Widget _tabItem({
@@ -269,7 +311,6 @@ class HistoryPage extends ConsumerWidget {
         task.pickupDate.month,
         task.pickupDate.day,
       );
-
       grouped.putIfAbsent(date, () => []);
       grouped[date]!.add(task);
     }

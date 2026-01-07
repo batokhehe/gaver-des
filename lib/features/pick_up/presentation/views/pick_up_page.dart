@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,20 @@ class PickUpPage extends ConsumerStatefulWidget {
 }
 
 class _PickUpPageState extends ConsumerState<PickUpPage> {
+  late TransformationController _transformController;
+
+  @override
+  void initState() {
+    super.initState();
+    _transformController = TransformationController();
+  }
+
+  @override
+  void dispose() {
+    _transformController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final dataAsync = ref.watch(pickupProvider(widget.id));
@@ -277,9 +292,9 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _signatureSection("Diserahkan Oleh", detail.ownerSign),
-          const SizedBox(height: 24),
+          const SizedBox(height: 36),
           _signatureSection("Diterima Oleh", detail.receiverSign),
-          const SizedBox(height: 24),
+          const SizedBox(height: 36),
           _signatureSection("Bukti Pengiriman", detail.proof),
         ],
       ),
@@ -307,9 +322,19 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
   Widget _signaturePreview(String base64) {
     try {
       final bytes = base64Decode(base64);
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.memory(bytes, height: 100, fit: BoxFit.contain),
+
+      return GestureDetector(
+        onTap: () => _showZoomSignature(bytes),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.black12),
+          ),
+          child: Image.memory(bytes, height: 140, fit: BoxFit.contain),
+        ),
       );
     } catch (_) {
       return const Text(
@@ -317,5 +342,50 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
         style: TextStyle(color: Colors.red, fontSize: 12),
       );
     }
+  }
+
+  void _showZoomSignature(Uint8List bytes) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.9),
+      builder: (_) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.zero,
+          child: GestureDetector(
+            onDoubleTap: () {
+              final isZoomed =
+                  _transformController.value.getMaxScaleOnAxis() > 1.1;
+
+              _transformController.value =
+                  isZoomed ? Matrix4.identity() : Matrix4.identity()
+                    ..scale(3.0);
+            },
+            child: Stack(
+              children: [
+                InteractiveViewer(
+                  transformationController: _transformController,
+                  minScale: 1,
+                  maxScale: 6,
+                  panEnabled: true,
+                  scaleEnabled: true,
+                  child: Center(child: Image.memory(bytes)),
+                ),
+
+                // ❌ close button
+                Positioned(
+                  top: 40,
+                  right: 20,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

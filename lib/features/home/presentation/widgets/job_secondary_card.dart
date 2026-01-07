@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
 import 'package:gaver_des/features/home/domain/entities/job.dart';
-import '../../../../core/theme/app_string.dart';
 
 class JobSecondaryCard extends StatelessWidget {
   final Job job;

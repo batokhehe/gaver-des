@@ -1,17 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaver_des/app/providers.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 
+import '../../../../core/navigation/tab_index_provider.dart';
 import '../../providers/task_filter_provider.dart';
 import '../../providers/task_viewmodel.dart';
 import '../widgets/task_card.dart';
 import '../widgets/task_empty_state_card.dart';
 
-class TaskPage extends ConsumerWidget {
+class TaskPage extends ConsumerStatefulWidget {
   const TaskPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TaskPage> createState() => _TaskPageState();
+}
+
+class _TaskPageState extends ConsumerState<TaskPage> with RouteAware {
+  late final ProviderSubscription _tabSub;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    _tabSub.close();
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    final status = ref.read(taskStatusProvider);
+    final filter = ref.read(taskFilterProvider);
+
+    if (filter == TaskFilter.pickup) {
+      ref.invalidate(pickupResponseProvider(status));
+    } else {
+      ref.invalidate(deliveryResponseProvider(status));
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _tabSub = ref.listenManual(tabIndexProvider, (_, next) {
+      if (next == 1) {
+        final status = ref.read(taskStatusProvider);
+        final filter = ref.read(taskFilterProvider);
+
+        if (filter == TaskFilter.pickup) {
+          ref.invalidate(pickupResponseProvider(status));
+        } else {
+          ref.invalidate(deliveryResponseProvider(status));
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final filter = ref.watch(taskFilterProvider);
 
     final tasks = ref.watch(taskListProvider);

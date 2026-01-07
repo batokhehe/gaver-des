@@ -49,8 +49,8 @@ class _AddItemBottomSheetState extends State<AddItemBottomSheet> {
               _inputField(nameController, hint: "Tissue Box"),
 
               const SizedBox(height: 16),
-              _inputLabel("Jumlah Koli"),
-              _inputField(koliController, hint: "1", suffix: "Koli"),
+              _inputLabel("Jumlah Qty"),
+              _inputField(koliController, hint: "1", suffix: "Qty"),
 
               const SizedBox(height: 16),
               _inputLabel("Berat Total"),

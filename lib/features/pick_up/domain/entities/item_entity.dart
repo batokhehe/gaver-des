@@ -1,14 +1,13 @@
 class ItemEntity {
   final int id;
-  final String name;
-  final int qty;
-  final double weight;
+  String name;
+  int qty;
+  double weight;
   final double actualWeight;
   final String uom;
   final String productOption;
 
-
-  const ItemEntity({
+  ItemEntity({
     required this.id,
     required this.name,
     required this.qty,

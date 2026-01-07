@@ -8,7 +8,6 @@ import 'package:gaver_des/features/pick_up/domain/entities/pick_up_entity.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/delete_bottom_sheet.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/digital_sign_bottom_sheet.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/finish_confirmation_bottom_sheet.dart';
-import 'package:gaver_des/features/task/domain/entities/task_entity.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/helpers/permission_helper.dart';
@@ -34,6 +33,10 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
   final Map<int, bool> checkedItems = {};
   String? receiptImagePath;
   List<ItemEntity>? _localItems;
+
+  final Map<int, TextEditingController> _qtyControllers = {};
+  final Map<int, TextEditingController> _weightControllers = {};
+  final Map<int, TextEditingController> _nameControllers = {};
 
   String? handedBySignatureBase64;
   String? receivedBySignatureBase64;
@@ -217,15 +220,37 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         final item = _localItems![i];
         final checked = checkedItems[item.id] ?? false;
 
+        _qtyControllers.putIfAbsent(
+          item.id,
+          () => TextEditingController(text: item.qty.toString()),
+        );
+
+        _weightControllers.putIfAbsent(
+          item.id,
+          () => TextEditingController(text: item.weight.toString()),
+        );
+
+        _nameControllers.putIfAbsent(
+          item.id,
+          () => TextEditingController(text: item.name.toString()),
+        );
+
         return ItemCardWithCheckbox(
-          name: item.name,
-          total: "${item.qty}",
-          weight: "${item.weight}",
+          qtyController: _qtyControllers[item.id]!,
+          weightController: _weightControllers[item.id]!,
+          nameController: _nameControllers[item.id]!,
           checked: checked,
+          onQtyChanged: (v) {
+            item.qty = int.tryParse(v) ?? 0;
+          },
+          onWeightChanged: (v) {
+            item.weight = double.tryParse(v) ?? 0;
+          },
           onChecked: (value) {
-            setState(() {
-              checkedItems[item.id] = value;
-            });
+            setState(() => checkedItems[item.id] = value);
+          },
+          onNameChanged: (value) {
+            item.name = value;
           },
           onDelete: () async {
             final confirm = await _showDeleteConfirmation(context);
@@ -233,6 +258,8 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
               setState(() {
                 _localItems!.removeAt(i);
                 checkedItems.remove(item.id);
+                _qtyControllers.remove(item.id)?.dispose();
+                _weightControllers.remove(item.id)?.dispose();
               });
             }
           },
