@@ -32,6 +32,7 @@ final pickupResponseProvider = FutureProvider.autoDispose
       final driverId = ref.watch(userIdProvider);
       final search = ref.watch(taskSearchProvider);
       final useCase = ref.read(getTasksUseCaseProvider);
+      final dateFilter = ref.watch(taskDateFilterProvider);
 
       return withGlobalLoading(ref, () {
         return useCase.execute(
@@ -39,6 +40,9 @@ final pickupResponseProvider = FutureProvider.autoDispose
           driverId: driverId,
           search: search,
           status: status,
+          sortCol: 'pickupDate',
+          startDate: dateFilter.startDate,
+          endDate: dateFilter.endDate,
         );
       });
     });
@@ -46,14 +50,16 @@ final pickupResponseProvider = FutureProvider.autoDispose
 final deliveryResponseProvider = FutureProvider.autoDispose
     .family<BaseResponse<List<TaskModel>>, String>((ref, status) async {
       final driverId = ref.watch(userIdProvider);
+      final search = ref.watch(taskSearchProvider);
       final useCase = ref.read(getTasksUseCaseProvider);
 
       return withGlobalLoading(ref, () {
         return useCase.execute(
           filter: TaskFilter.delivery,
           driverId: driverId,
-          search: '',
+          search: search,
           status: status,
+          sortCol: 'pickupDate',
         );
       });
     });

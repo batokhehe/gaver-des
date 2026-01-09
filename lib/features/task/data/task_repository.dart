@@ -6,6 +6,9 @@ abstract class TaskRepository {
   Future<BaseResponse<List<TaskModel>>> getPickUpTasks({
     required String status,
     required String search,
+    String sortCol,
+    DateTime? startDate,
+    DateTime? endDate,
     required int driverId,
     int page = 1,
   });
@@ -14,6 +17,9 @@ abstract class TaskRepository {
     required String status,
     required String search,
     required int driverId,
+    String sortCol,
+    DateTime? startDate,
+    DateTime? endDate,
     int page = 1,
   });
 }

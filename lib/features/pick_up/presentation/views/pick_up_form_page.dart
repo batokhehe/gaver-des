@@ -133,17 +133,22 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
                   ElevatedButton(
                     onPressed: () async {
                       final result = await AddItemBottomSheet.show(context);
+
                       if (result != null) {
                         setState(() {
+                          final qtyValue =
+                              double.tryParse(result["total"].toString()) ?? 0;
+
+                          final weightValue =
+                              double.tryParse(result["weight"].toString()) ?? 0;
+
                           final newItem = ItemEntity(
                             id: DateTime.now().millisecondsSinceEpoch,
                             name: result["name"],
-                            qty: int.parse(result["total"].toString()),
+                            qty: qtyValue.toInt(),
                             uom: '',
-                            weight: double.parse(result["weight"].toString()),
-                            actualWeight: double.parse(
-                              result["weight"].toString(),
-                            ),
+                            weight: weightValue,
+                            actualWeight: weightValue,
                             productOption: result["name"],
                           );
 

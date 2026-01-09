@@ -23,11 +23,37 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
 
+  void _resetFilters() {
+    _debounce?.cancel();
+    _searchController.clear();
+
+    ref.read(taskSearchProvider.notifier).state = '';
+    ref.read(taskDateFilterProvider.notifier).state = const DateFilter();
+  }
+
   @override
   void dispose() {
     _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _resetFilters();
+
+      final status = ref.read(historyStatusProvider);
+      final filter = ref.read(taskFilterProvider);
+
+      if (filter == TaskFilter.pickup) {
+        ref.invalidate(pickupResponseProvider(status));
+      } else {
+        ref.invalidate(deliveryResponseProvider(status));
+      }
+    });
   }
 
   @override
@@ -293,12 +319,19 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     );
   }
 
-  void _showFilterSheet(BuildContext context) {
-    showModalBottomSheet(
+  void _showFilterSheet(BuildContext context) async {
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => const FilterBottomSheet(),
+    );
+
+    if (result == null) return;
+
+    ref.read(taskDateFilterProvider.notifier).state = DateFilter(
+      startDate: result["startDate"],
+      endDate: result["endDate"],
     );
   }
 

@@ -13,12 +13,18 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<BaseResponse<List<TaskModel>>> getPickUpTasks({
     required String status,
     required String search,
+    String? sortCol,
+    DateTime? startDate,
+    DateTime? endDate,
     required int driverId,
     int page = 1,
   }) {
     return api.fetchPickUp(
       status: status,
       search: search,
+      sortCol: sortCol,
+      startDate: startDate,
+      endDate: endDate,
       driverId: driverId,
       page: page,
     );
@@ -28,12 +34,18 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<BaseResponse<List<TaskModel>>> getDeliveryTasks({
     required String status,
     required String search,
+    String? sortCol,
+    DateTime? startDate,
+    DateTime? endDate,
     required int driverId,
     int page = 1,
   }) {
     return api.fetchDelivery(
       status: status,
       search: search,
+      sortCol: sortCol,
+      startDate: startDate,
+      endDate: endDate,
       driverId: driverId,
       page: page,
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -22,8 +23,37 @@ class AddItemBottomSheet extends StatefulWidget {
 
 class _AddItemBottomSheetState extends State<AddItemBottomSheet> {
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController koliController = TextEditingController();
+  final TextEditingController qtyController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
+
+  String? nameError;
+  String? qtyError;
+  String? weightError;
+
+  bool get isFormValid =>
+      nameError == null &&
+      qtyError == null &&
+      weightError == null &&
+      nameController.text.isNotEmpty &&
+      qtyController.text.isNotEmpty &&
+      weightController.text.isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+
+    nameController.addListener(_validateForm);
+    qtyController.addListener(_validateForm);
+    weightController.addListener(_validateForm);
+  }
+
+  void _validateForm() {
+    setState(() {
+      nameError = nameController.text.isEmpty ? "Nama wajib diisi" : null;
+      qtyError = qtyController.text.isEmpty ? "Qty wajib diisi" : null;
+      weightError = weightController.text.isEmpty ? "Berat wajib diisi" : null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,23 +73,37 @@ class _AddItemBottomSheetState extends State<AddItemBottomSheet> {
             controller: scrollController,
             children: [
               _buildHeader(context),
-
               const SizedBox(height: 16),
+
               _inputLabel("Nama"),
-              _inputField(nameController, hint: "Tissue Box"),
-
+              _inputField(
+                nameController,
+                hint: "Tissue Box",
+                errorText: nameError,
+              ),
               const SizedBox(height: 16),
+
               _inputLabel("Jumlah Qty"),
-              _inputField(koliController, hint: "1", suffix: "Qty"),
-
+              _inputField(
+                qtyController,
+                hint: "1",
+                suffix: "Qty",
+                errorText: qtyError,
+                isDecimal: true,
+              ),
               const SizedBox(height: 16),
+
               _inputLabel("Berat Total"),
-              _inputField(weightController, hint: "12", suffix: "Kg"),
+              _inputField(
+                weightController,
+                hint: "12",
+                suffix: "Kg",
+                errorText: weightError,
+                isDecimal: true,
+              ),
 
               const SizedBox(height: 24),
               _buildButtons(context),
-
-              const SizedBox(height: 8), // aman, kecil
             ],
           ),
         );
@@ -91,29 +135,52 @@ class _AddItemBottomSheetState extends State<AddItemBottomSheet> {
     TextEditingController controller, {
     String? hint,
     String? suffix,
+    String? errorText,
+    bool isDecimal = false, // 👈 TAMBAHAN
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: AppTypography.smallNormalGrey,
-                border: InputBorder.none,
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: errorText != null ? Colors.red : Colors.transparent,
             ),
           ),
-          if (suffix != null)
-            Text(suffix, style: AppTypography.smallNormalGrey),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  keyboardType: isDecimal
+                      ? const TextInputType.numberWithOptions(decimal: true)
+                      : TextInputType.text,
+                  inputFormatters: isDecimal
+                      ? [DecimalTextInputFormatter(decimalRange: 2)]
+                      : null,
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: AppTypography.smallNormalGrey,
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              if (suffix != null)
+                Text(suffix, style: AppTypography.smallNormalGrey),
+            ],
+          ),
+        ),
+        if (errorText != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            errorText,
+            style: const TextStyle(fontSize: 12, color: Colors.red),
+          ),
         ],
-      ),
+      ],
     );
   }
 
@@ -139,15 +206,18 @@ class _AddItemBottomSheetState extends State<AddItemBottomSheet> {
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton(
-            onPressed: () {
-              context.pop({
-                "name": nameController.text,
-                "total": koliController.text,
-                "weight": weightController.text,
-              });
-            },
+            onPressed: isFormValid
+                ? () {
+                    context.pop({
+                      "name": nameController.text,
+                      "total": qtyController.text,
+                      "weight": weightController.text,
+                    });
+                  }
+                : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryDark, // warna sesuai desain
+              backgroundColor: AppColors.primaryDark,
+              disabledBackgroundColor: AppColors.primaryDark.withOpacity(0.4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -160,5 +230,31 @@ class _AddItemBottomSheetState extends State<AddItemBottomSheet> {
         ),
       ],
     );
+  }
+}
+
+class DecimalTextInputFormatter extends TextInputFormatter {
+  DecimalTextInputFormatter({this.decimalRange = 2});
+
+  final int decimalRange;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+
+    // Boleh kosong
+    if (text.isEmpty) return newValue;
+
+    // Regex: angka + optional . + max 2 digit
+    final regExp = RegExp(r'^\d+\.?\d{0,' + decimalRange.toString() + r'}$');
+
+    if (regExp.hasMatch(text)) {
+      return newValue;
+    }
+
+    return oldValue;
   }
 }

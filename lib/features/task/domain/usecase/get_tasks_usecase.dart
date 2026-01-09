@@ -13,6 +13,9 @@ class GetTasksUseCase {
     required int driverId,
     required String search,
     required String status,
+    required String sortCol,
+    DateTime? startDate,
+    DateTime? endDate,
   }) {
     switch (filter) {
       case TaskFilter.pickup:
@@ -20,6 +23,9 @@ class GetTasksUseCase {
           driverId: driverId,
           status: status,
           search: search,
+          sortCol: sortCol,
+          startDate: startDate,
+          endDate: endDate,
         );
 
       case TaskFilter.delivery:
@@ -27,6 +33,7 @@ class GetTasksUseCase {
           driverId: driverId,
           status: status,
           search: search,
+          sortCol: sortCol,
         );
     }
   }
