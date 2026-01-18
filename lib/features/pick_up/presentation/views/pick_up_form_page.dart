@@ -11,14 +11,19 @@ import 'package:gaver_des/features/pick_up/presentation/widgets/finish_confirmat
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/helpers/permission_helper.dart';
+import '../../../../core/navigation/tab_index_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../task/presentation/widgets/task_card.dart';
+import '../../../task/providers/task_viewmodel.dart';
+import '../../data/pick_up_status.dart';
 import '../../providers/pickup_items_provider.dart';
 import '../widgets/add_item_bottom_sheet.dart';
 import '../widgets/item_card_with_checkbox.dart';
 import '../widgets/receipt_preview_bottom_sheet.dart';
 import '../widgets/signature_preview_bottom_sheet.dart';
+import '../widgets/update_status_bottom_sheet.dart';
+import '../widgets/update_status_confirmation_bottom_sheet.dart';
 
 class PickUpFormPage extends ConsumerStatefulWidget {
   final int id;
@@ -120,7 +125,54 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionTitle("Informasi Pengiriman"),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _sectionTitle("Informasi Pengiriman"),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final status = await UpdateStatusBottomSheet.show(
+                        context,
+                      );
+
+                      if (status == null) return;
+
+                      final confirm = await showModalBottomSheet<bool>(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (_) => UpdateStatusConfirmationBottomSheet(
+                          pickupId: widget.id,
+                          status: status.apiValue,
+                        ),
+                      );
+                    },
+
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: AppColors.info,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.info_outline, color: Colors.white, size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          "Ubah Status",
+                          style: AppTypography.xSmallNormalWhite,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               _buildPickUpHeader(detail),
 

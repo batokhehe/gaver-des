@@ -8,10 +8,10 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../task/providers/task_viewmodel.dart';
 import '../../providers/pickup_items_provider.dart';
 
-class FinishConfirmationBottomSheet extends ConsumerWidget {
-  final int pickupId;
+class UpdateStatusConfirmationBottomSheet extends ConsumerWidget {
+  final String status;
 
-  const FinishConfirmationBottomSheet({super.key, required this.pickupId});
+  const UpdateStatusConfirmationBottomSheet({super.key, required this.status});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +29,7 @@ class FinishConfirmationBottomSheet extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "Konfirmasi",
+                "Konfirmasi Perubahan Status",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
               GestureDetector(
@@ -50,15 +50,15 @@ class FinishConfirmationBottomSheet extends ConsumerWidget {
           const SizedBox(height: 16),
 
           const Text(
-            "Yakin Menyelesaikan Tugas?",
+            "Yakin Mengubah Status Anda?",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
 
           const SizedBox(height: 8),
 
           const Text(
-            "Pastikan semua barang sudah diterima dengan baik. "
-            "Setelah diselesaikan, tugas ini akan ditutup.",
+            "Perubahan status akan memengaruhi proses tugas ini. "
+            "Pastikan pilihan status sudah sesuai sebelum melanjutkan.",
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.black54),
           ),
@@ -93,15 +93,15 @@ class FinishConfirmationBottomSheet extends ConsumerWidget {
                   onPressed: () async {
                     // 🔥 HIT API FINISH
                     await ref
-                        .read(pickupActionControllerProvider.notifier)
-                        .updateStatusPickup(pickupId, 'finished');
+                        .read(userActionControllerProvider.notifier)
+                        .updateStatus(status);
 
-                    final state = ref.read(pickupActionControllerProvider);
+                    final state = ref.read(userActionControllerProvider);
 
                     if (state.hasError) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Gagal menyelesaikan tugas'),
+                          content: Text('Gagal mengubah status user'),
                         ),
                       );
                       return;
@@ -126,7 +126,7 @@ class FinishConfirmationBottomSheet extends ConsumerWidget {
                     ),
                   ),
                   child: const Text(
-                    "Selesaikan Tugas",
+                    "Ubah Status",
                     style: AppTypography.smallNormalWhite,
                   ),
                 ),

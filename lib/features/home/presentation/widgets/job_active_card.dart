@@ -46,7 +46,7 @@ class JobActiveCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        job.address,
+                        job.hub,
                         style: AppTypography.smallNormalWhite,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,

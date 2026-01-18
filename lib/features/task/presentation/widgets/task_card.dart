@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TaskCard extends StatelessWidget {
   final int id;
@@ -14,6 +15,7 @@ class TaskCard extends StatelessWidget {
   final String address;
   final bool isShowBottomNext;
   final bool isHistory;
+  final String? mapsLink;
 
   const TaskCard({
     super.key,
@@ -27,6 +29,7 @@ class TaskCard extends StatelessWidget {
     required this.address,
     required this.isShowBottomNext,
     required this.isHistory,
+    this.mapsLink,
   });
 
   @override
@@ -120,6 +123,26 @@ class TaskCard extends StatelessWidget {
                   children: [
                     Text(vendor, style: AppTypography.smallBoldBlack),
                     Text(address, style: AppTypography.smallNormalBlack),
+
+                    InkWell(
+                      onTap: () => _openMaps(mapsLink!),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.map_outlined,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Show in Maps",
+                            style: AppTypography.xSmallBoldPrimary,
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -149,5 +172,12 @@ class TaskCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _openMaps(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 }

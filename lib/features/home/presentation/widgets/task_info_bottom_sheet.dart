@@ -20,6 +20,7 @@ class TaskInfoBottomSheet extends StatelessWidget {
       item: 3,
       vendor: "PT. Priskia Muda Jaya",
       address: "Jl. Palmerah Barat No. 22, Gelora",
+      pickupMapsOption: null,
     ),
   ];
 
