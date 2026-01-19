@@ -9,11 +9,13 @@ class UserModel {
   final VehicleModel? vehicle;
   final bool? isWeb;
   final bool? isMobile;
+  final String status;
 
   UserModel({
     required this.id,
     required this.name,
     required this.email,
+    required this.status,
     this.role,
     this.vehicle,
     this.isWeb,
@@ -31,6 +33,7 @@ class UserModel {
           : null,
       isWeb: json["isWeb"],
       isMobile: json["isMobile"],
+      status: json["status"],
     );
   }
 
@@ -43,6 +46,7 @@ class UserModel {
       "vehicle": vehicle?.toJson(),
       "isWeb": isWeb,
       "isMobile": isMobile,
+      "status": status,
     };
   }
 }

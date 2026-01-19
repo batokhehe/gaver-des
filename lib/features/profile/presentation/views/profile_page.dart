@@ -5,6 +5,7 @@ import 'package:gaver_des/features/profile/presentation/views/change_password_vi
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../user/providers/user_provider.dart';
+import '../../data/driver_status.dart';
 import '../widgets/logout_bottom_sheet.dart';
 import '../widgets/logout_button.dart';
 import 'history_page.dart';
@@ -15,6 +16,7 @@ class ProfilePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider).value;
+    final driverStatus = mapDriverStatus(user?.status ?? 'active');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -22,7 +24,7 @@ class ProfilePage extends ConsumerWidget {
         child: Column(
           children: [
             _buildHeader(context),
-            _buildProfileCard(user?.name ?? ".."),
+            _buildProfileCard(user?.name ?? "..", driverStatus, context, ref),
             _buildDeliveryCard(context),
             const SizedBox(height: 24),
             _buildSectionTitle("Informasi Akun"),
@@ -130,7 +132,12 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileCard(String fullNameUser) {
+  Widget _buildProfileCard(
+    String fullNameUser,
+    DriverStatus status,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -160,6 +167,51 @@ class ProfilePage extends ConsumerWidget {
             const Text(
               "Driver Garuda Verdana",
               style: TextStyle(color: Colors.black54, fontSize: 13),
+            ),
+
+            const SizedBox(height: 6),
+
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: status.bgColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: status.bgColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      status.label,
+                      style: TextStyle(
+                        color: status.textColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: () {
+                      _showUpdateDriverStatus(context, ref);
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Icon(
+                      Icons.edit,
+                      size: 16,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -388,5 +440,34 @@ class ProfilePage extends ConsumerWidget {
       isScrollControlled: true,
       builder: (context) => const LogoutBottomSheet(),
     );
+  }
+
+  Future<void> _showUpdateDriverStatus(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    // 1️⃣ PILIH STATUS
+    final status = await UpdateStatusBottomSheet.show(context);
+
+    if (status == null) return;
+
+    // 2️⃣ KONFIRMASI
+    final confirm = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => UpdateStatusConfirmationBottomSheet(
+        pickupId: 0, // ❗ tidak dipakai di profile
+        status: status.apiValue,
+      ),
+    );
+
+    if (confirm != true) return;
+
+    // 3️⃣ HIT API UPDATE DRIVER STATUS
+    await ref.read(userProvider.notifier).updateDriverStatus(status.apiValue);
+
+    // 4️⃣ REFRESH PROFILE
+    ref.refresh(userProvider);
   }
 }

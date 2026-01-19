@@ -124,6 +124,7 @@ class _TaskPageState extends ConsumerState<TaskPage> with RouteAware {
                         isShowBottomNext: true,
                         isHistory: false,
                         isPickUp: filter == TaskFilter.pickup,
+                        mapsLink: t.pickupMapsOption,
                       );
                     },
                   );

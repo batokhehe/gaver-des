@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import '../../../core/errors/app_exception.dart';
+
 class UserApi {
   final Dio dio;
 
@@ -9,5 +11,21 @@ class UserApi {
     final response = await dio.get('/auth/current');
 
     return response.data;
+  }
+
+  Future<void> updateStatus(int id, String status) async {
+    final response = await dio.put(
+      '/auth/changestatus',
+      data: {'status': status},
+    );
+    if (response.statusCode != null && response.statusCode! >= 400) {
+      final data = response.data;
+
+      throw AppException(
+        statusCode: response.statusCode!,
+        message: data['message'] ?? 'Terjadi kesalahan',
+        code: data['code'],
+      );
+    }
   }
 }

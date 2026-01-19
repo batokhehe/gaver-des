@@ -45,10 +45,10 @@ class PickupActionController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  Future<void> finishPickup(int id) async {
+  Future<void> updateStatusPickup(int id, String status) async {
     state = const AsyncLoading();
     try {
-      await ref.read(pickUpRepositoryProvider).api.updateStatus(id, 'finished');
+      await ref.read(pickUpRepositoryProvider).api.updateStatus(id, status);
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);

@@ -7,6 +7,7 @@ class TaskEntity {
   final String vendor;
   final String address;
   final DateTime pickupDate;
+  final String? pickupMapsOption;
 
   TaskEntity({
     required this.id,
@@ -17,5 +18,6 @@ class TaskEntity {
     required this.vendor,
     required this.address,
     required this.pickupDate,
+    this.pickupMapsOption,
   });
 }

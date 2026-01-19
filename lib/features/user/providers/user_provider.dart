@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/features/user/domain/vehicle_model.dart';
+import 'package:gaver_des/features/user/providers/user_api_provider.dart';
+
+import '../data/user_repository_impl.dart';
 import '../domain/user_model.dart';
 import 'user_repository_provider.dart';
 
@@ -26,3 +29,17 @@ final userVehicleProvider = Provider<VehicleModel?>((ref) {
   final user = ref.watch(userProvider).value;
   return user?.vehicle;
 });
+
+final userRepositoryProvider = Provider(
+  (ref) => UserRepositoryImpl(ref.read(userApiProvider)),
+);
+
+Future<void> updateStatusPickup(int id, String status) async {
+  state = const AsyncLoading();
+  try {
+    await ref.read(userRepositoryProvider).api.updateStatus(id, status);
+    state = const AsyncData(null);
+  } catch (e, st) {
+    state = AsyncError(e, st);
+  }
+}

@@ -9,6 +9,7 @@ class TaskItem {
   final int item;
   final String vendor;
   final String address;
+  final String? pickupMapsOption;
 
   TaskItem({
     required this.id,
@@ -19,5 +20,6 @@ class TaskItem {
     required this.item,
     required this.vendor,
     required this.address,
+    this.pickupMapsOption,
   });
 }
