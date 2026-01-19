@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/navigation/tab_index_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../task/providers/task_viewmodel.dart';
-import '../../providers/pickup_items_provider.dart';
 
 class UpdateStatusConfirmationBottomSheet extends ConsumerWidget {
   final String status;
@@ -90,35 +87,7 @@ class UpdateStatusConfirmationBottomSheet extends ConsumerWidget {
               // SELESAIKAN
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () async {
-                    // 🔥 HIT API FINISH
-                    await ref
-                        .read(userActionControllerProvider.notifier)
-                        .updateStatus(status);
-
-                    final state = ref.read(userActionControllerProvider);
-
-                    if (state.hasError) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Gagal mengubah status user'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    // 🔁 REFRESH DASHBOARD API
-                    ref.refresh(taskDashboardResponseProvider.future);
-
-                    // 🏠 PINDAH KE DASHBOARD
-                    ref.read(tabIndexProvider.notifier).state = 0;
-
-                    // ❌ CLOSE BOTTOM SHEET
-                    if (context.mounted) {
-                      context.pop(true);
-                      context.go('/home');
-                    }
-                  },
+                  onPressed: () => context.pop(true),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryDark,
                     shape: RoundedRectangleBorder(

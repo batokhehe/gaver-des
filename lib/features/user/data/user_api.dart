@@ -13,8 +13,8 @@ class UserApi {
     return response.data;
   }
 
-  Future<void> updateStatus(int id, String status) async {
-    final response = await dio.put(
+  Future<void> updateStatus(String status) async {
+    final response = await dio.post(
       '/auth/changestatus',
       data: {'status': status},
     );

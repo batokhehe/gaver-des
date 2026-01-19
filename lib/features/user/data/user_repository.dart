@@ -41,4 +41,16 @@ class UserRepository {
       throw ErrorParser.parse(e);
     }
   }
+
+  Future<void> updateUserStatusLocal(String status) async {
+    final user = await getUser();
+    if (user == null) return;
+
+    final updatedUser = user.copyWith(status: status);
+    await saveUser(updatedUser);
+  }
+
+  Future<void> updateStatusUser(String status) async {
+    await api.updateStatus(status);
+  }
 }

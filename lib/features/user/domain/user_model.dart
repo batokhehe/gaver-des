@@ -22,6 +22,29 @@ class UserModel {
     this.isMobile,
   });
 
+  /// ✅ COPY WITH (INI YANG KEMARIN KURANG)
+  UserModel copyWith({
+    int? id,
+    String? name,
+    String? email,
+    RoleModel? role,
+    VehicleModel? vehicle,
+    bool? isWeb,
+    bool? isMobile,
+    String? status,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      vehicle: vehicle ?? this.vehicle,
+      isWeb: isWeb ?? this.isWeb,
+      isMobile: isMobile ?? this.isMobile,
+      status: status ?? this.status,
+    );
+  }
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json["id"],
@@ -33,7 +56,7 @@ class UserModel {
           : null,
       isWeb: json["isWeb"],
       isMobile: json["isMobile"],
-      status: json["status"],
+      status: json["status"] ?? "active", // ✅ SAFETY DEFAULT
     );
   }
 

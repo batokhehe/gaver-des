@@ -4,10 +4,13 @@ import 'package:gaver_des/features/profile/presentation/views/change_password_vi
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../home/presentation/widgets/success_snackbar.dart';
 import '../../../user/providers/user_provider.dart';
 import '../../data/driver_status.dart';
 import '../widgets/logout_bottom_sheet.dart';
 import '../widgets/logout_button.dart';
+import '../widgets/update_status_bottom_sheet.dart';
+import '../widgets/update_status_confirmation_bottom_sheet.dart';
 import 'history_page.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -16,7 +19,8 @@ class ProfilePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider).value;
-    final driverStatus = mapDriverStatus(user?.status ?? 'active');
+    final statusType = parseDriverStatus(user?.status);
+    final driverStatus = mapDriverStatus(statusType);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -171,25 +175,22 @@ class ProfilePage extends ConsumerWidget {
 
             const SizedBox(height: 6),
 
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: status.bgColor,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: status.bgColor,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
+            InkWell(
+              onTap: () => _showUpdateDriverStatus(context, ref),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: status.bgColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
                       status.label,
                       style: TextStyle(
                         color: status.textColor,
@@ -197,20 +198,10 @@ class ProfilePage extends ConsumerWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  InkWell(
-                    onTap: () {
-                      _showUpdateDriverStatus(context, ref);
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: const Icon(
-                      Icons.edit,
-                      size: 16,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Icon(Icons.edit, size: 14, color: status.textColor),
+                  ],
+                ),
               ),
             ),
           ],
@@ -446,28 +437,38 @@ class ProfilePage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
-    // 1️⃣ PILIH STATUS
-    final status = await UpdateStatusBottomSheet.show(context);
+    final statusType = await UpdateStatusBottomSheet.show(context);
+    if (statusType == null) return;
 
-    if (status == null) return;
+    final apiStatus = driverStatusToApi(statusType);
 
-    // 2️⃣ KONFIRMASI
     final confirm = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => UpdateStatusConfirmationBottomSheet(
-        pickupId: 0, // ❗ tidak dipakai di profile
-        status: status.apiValue,
-      ),
+      builder: (_) => UpdateStatusConfirmationBottomSheet(status: apiStatus),
     );
 
     if (confirm != true) return;
 
-    // 3️⃣ HIT API UPDATE DRIVER STATUS
-    await ref.read(userProvider.notifier).updateDriverStatus(status.apiValue);
+    try {
+      await ref
+          .read(userActionControllerProvider.notifier)
+          .updateStatusUserOptimistic(apiStatus);
 
-    // 4️⃣ REFRESH PROFILE
-    ref.refresh(userProvider);
+      // 🔁 REFRESH PROVIDER AGAR UI UPDATE
+      ref.refresh(userProvider);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SuccessSnackBar(
+          title: 'Update Status User',
+          message: 'Status berhasil diperbarui',
+        ),
+      );
+    } catch (_) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gagal mengubah status')));
+    }
   }
 }

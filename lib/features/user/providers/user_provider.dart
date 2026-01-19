@@ -1,8 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/features/user/domain/vehicle_model.dart';
-import 'package:gaver_des/features/user/providers/user_api_provider.dart';
 
-import '../data/user_repository_impl.dart';
 import '../domain/user_model.dart';
 import 'user_repository_provider.dart';
 
@@ -30,16 +29,45 @@ final userVehicleProvider = Provider<VehicleModel?>((ref) {
   return user?.vehicle;
 });
 
-final userRepositoryProvider = Provider(
-  (ref) => UserRepositoryImpl(ref.read(userApiProvider)),
-);
+class UserActionController extends StateNotifier<AsyncValue<void>> {
+  final Ref ref;
 
-Future<void> updateStatusPickup(int id, String status) async {
-  state = const AsyncLoading();
-  try {
-    await ref.read(userRepositoryProvider).api.updateStatus(id, status);
-    state = const AsyncData(null);
-  } catch (e, st) {
-    state = AsyncError(e, st);
+  UserActionController(this.ref) : super(const AsyncData(null));
+
+  Future<void> updateStatusUser(String status) async {
+    state = const AsyncLoading();
+    try {
+      debugPrint('API CALL: updateStatus status=$status');
+
+      await ref.read(userRepositoryProvider).api.updateStatus(status);
+
+      debugPrint('API SUCCESS');
+      state = const AsyncData(null);
+    } catch (e, st) {
+      debugPrint('API ERROR: $e');
+      state = AsyncError(e, st);
+    }
+  }
+
+  Future<void> updateStatusUserOptimistic(String status) async {
+    state = const AsyncLoading();
+
+    try {
+      // 1️⃣ UPDATE SESSION LOCAL
+      await ref.read(userRepositoryProvider).updateUserStatusLocal(status);
+
+      // 2️⃣ HIT API
+      // await ref.read(userRepositoryProvider).updateStatusUser(status);
+
+      state = const AsyncData(null);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      rethrow;
+    }
   }
 }
+
+final userActionControllerProvider =
+    StateNotifierProvider<UserActionController, AsyncValue<void>>((ref) {
+      return UserActionController(ref);
+    });
