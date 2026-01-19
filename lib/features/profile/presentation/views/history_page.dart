@@ -49,7 +49,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       final filter = ref.read(taskFilterProvider);
 
       if (filter == TaskFilter.pickup) {
-        ref.invalidate(pickupResponseProvider(status));
+        ref.invalidate(pickupHistoryResponseProvider);
       } else {
         ref.invalidate(deliveryResponseProvider(status));
       }
@@ -63,7 +63,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final search = ref.watch(taskSearchProvider);
 
     final responseAsync = filter == TaskFilter.pickup
-        ? ref.watch(pickupResponseProvider(status))
+        ? ref.watch(pickupHistoryResponseProvider)
         : ref.watch(deliveryResponseProvider(status));
 
     return Scaffold(
@@ -77,7 +77,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             child: RefreshIndicator(
               onRefresh: () async {
                 if (filter == TaskFilter.pickup) {
-                  await ref.refresh(pickupResponseProvider(status).future);
+                  await ref.refresh(pickupHistoryResponseProvider.future);
                 } else {
                   await ref.refresh(deliveryResponseProvider(status).future);
                 }

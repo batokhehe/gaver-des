@@ -47,6 +47,25 @@ final pickupResponseProvider = FutureProvider.autoDispose
       });
     });
 
+final pickupHistoryResponseProvider =
+    FutureProvider.autoDispose<BaseResponse<List<TaskModel>>>((ref) async {
+      final driverId = ref.watch(userIdProvider);
+      final search = ref.watch(taskSearchProvider);
+      final useCase = ref.read(getTasksUseCaseProvider);
+      final dateFilter = ref.watch(taskDateFilterProvider);
+
+      return withGlobalLoading(ref, () {
+        return useCase.history(
+          filter: TaskFilter.pickup,
+          driverId: driverId,
+          search: search,
+          sortCol: 'pickupDate',
+          startDate: dateFilter.startDate,
+          endDate: dateFilter.endDate,
+        );
+      });
+    });
+
 final deliveryResponseProvider = FutureProvider.autoDispose
     .family<BaseResponse<List<TaskModel>>, String>((ref, status) async {
       final driverId = ref.watch(userIdProvider);

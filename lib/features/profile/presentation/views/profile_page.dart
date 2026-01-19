@@ -441,7 +441,7 @@ class ProfilePage extends ConsumerWidget {
     if (statusType == null) return;
 
     final apiStatus = driverStatusToApi(statusType);
-
+    print('driver status $apiStatus');
     final confirm = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -450,6 +450,7 @@ class ProfilePage extends ConsumerWidget {
     );
 
     if (confirm != true) return;
+    print('update status masuk ke API');
 
     try {
       await ref

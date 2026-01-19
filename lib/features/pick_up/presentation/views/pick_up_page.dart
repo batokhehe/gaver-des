@@ -338,9 +338,29 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
         ),
       );
     } catch (_) {
-      return const Text(
-        "Gagal memuat gambar",
-        style: TextStyle(color: Colors.red, fontSize: 12),
+      return Container(
+        width: double.infinity, // ✅ FULL WIDTH
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.red.shade50,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.red.shade200),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.broken_image, color: Colors.red, size: 18),
+            SizedBox(width: 8),
+            Text(
+              "Gagal memuat tanda tangan",
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       );
     }
   }

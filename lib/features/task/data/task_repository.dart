@@ -13,6 +13,15 @@ abstract class TaskRepository {
     int page = 1,
   });
 
+  Future<BaseResponse<List<TaskModel>>> getPickUpHistories({
+    required String search,
+    String sortCol,
+    DateTime? startDate,
+    DateTime? endDate,
+    required int driverId,
+    int page = 1,
+  });
+
   Future<BaseResponse<List<TaskModel>>> getDeliveryTasks({
     required String status,
     required String search,

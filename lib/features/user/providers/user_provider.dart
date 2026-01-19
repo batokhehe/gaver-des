@@ -52,17 +52,19 @@ class UserActionController extends StateNotifier<AsyncValue<void>> {
   Future<void> updateStatusUserOptimistic(String status) async {
     state = const AsyncLoading();
 
+    final repo = ref.read(userRepositoryProvider);
+
     try {
-      // 1️⃣ UPDATE SESSION LOCAL
-      await ref.read(userRepositoryProvider).updateUserStatusLocal(status);
+      // 1️⃣ UPDATE LOCAL DULU (UI LANGSUNG BERUBAH)
+      await repo.updateUserStatusLocal(status);
 
       // 2️⃣ HIT API
-      // await ref.read(userRepositoryProvider).updateStatusUser(status);
+      await repo.updateStatusUser(status);
 
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);
-      rethrow;
+      rethrow; // penting agar bisa ditangkap UI
     }
   }
 }

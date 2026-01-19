@@ -173,6 +173,30 @@ class TaskCard extends StatelessWidget {
                   : const SizedBox.shrink(),
             ],
           ),
+          if (isHistory) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: _statusBgColor(status),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: _statusTextColor(status).withOpacity(0.4),
+                ),
+              ),
+              child: Text(
+                status.toUpperCase(),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _statusTextColor(status),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -183,5 +207,21 @@ class TaskCard extends StatelessWidget {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
+  }
+
+  Color _statusBgColor(String status) {
+    final s = status.toLowerCase();
+    if (s == 'accident' || s == 'canceled') {
+      return Colors.red.shade50;
+    }
+    return Colors.green.shade50;
+  }
+
+  Color _statusTextColor(String status) {
+    final s = status.toLowerCase();
+    if (s == 'accident' || s == 'canceled') {
+      return Colors.red.shade700;
+    }
+    return Colors.green.shade700;
   }
 }

@@ -31,6 +31,25 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
+  Future<BaseResponse<List<TaskModel>>> getPickUpHistories({
+    required String search,
+    String? sortCol,
+    DateTime? startDate,
+    DateTime? endDate,
+    required int driverId,
+    int page = 1,
+  }) {
+    return api.fetchPickUpHistory(
+      search: search,
+      sortCol: sortCol,
+      startDate: startDate,
+      endDate: endDate,
+      driverId: driverId,
+      page: page,
+    );
+  }
+
+  @override
   Future<BaseResponse<List<TaskModel>>> getDeliveryTasks({
     required String status,
     required String search,
