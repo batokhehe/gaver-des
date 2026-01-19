@@ -3,33 +3,32 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gaver_des/features/pick_up/domain/entities/item_entity.dart';
-import 'package:gaver_des/features/pick_up/domain/entities/pick_up_entity.dart';
-import 'package:gaver_des/features/pick_up/presentation/widgets/delete_bottom_sheet.dart';
-import 'package:gaver_des/features/pick_up/presentation/widgets/digital_sign_bottom_sheet.dart';
-import 'package:gaver_des/features/pick_up/presentation/widgets/finish_confirmation_bottom_sheet.dart';
+import 'package:gaver_des/features/delivery/domain/entities/delivery_entity.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/helpers/permission_helper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../task/presentation/widgets/task_card.dart';
-import '../../providers/pickup_items_provider.dart';
-import '../widgets/add_item_bottom_sheet.dart';
+import '../../domain/entities/item_entity.dart';
+import '../../providers/delivery_items_provider.dart';
+import '../widgets/delete_bottom_sheet.dart';
+import '../widgets/digital_sign_bottom_sheet.dart';
+import '../widgets/finish_confirmation_bottom_sheet.dart';
 import '../widgets/item_card_with_checkbox.dart';
 import '../widgets/receipt_preview_bottom_sheet.dart';
 import '../widgets/signature_preview_bottom_sheet.dart';
 
-class PickUpFormPage extends ConsumerStatefulWidget {
+class DeliveryFormPage extends ConsumerStatefulWidget {
   final int id;
 
-  const PickUpFormPage({super.key, required this.id});
+  const DeliveryFormPage({super.key, required this.id});
 
   @override
-  ConsumerState<PickUpFormPage> createState() => _PickUpFormPageState();
+  ConsumerState<DeliveryFormPage> createState() => _DeliveryFormPageState();
 }
 
-class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
+class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
   final Map<int, bool> checkedItems = {};
   String? receiptImagePath;
   List<ItemEntity>? _localItems;
@@ -43,7 +42,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final dataAsync = ref.watch(pickupProvider(widget.id));
+    final dataAsync = ref.watch(deliveryProvider(widget.id));
 
     return Scaffold(
       backgroundColor: const Color(0xffF5F5F5),
@@ -104,7 +103,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
     );
   }
 
-  Widget _buildContent(PickUpEntity detail) {
+  Widget _buildContent(DeliveryEntity detail) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -122,7 +121,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
             children: [
               _sectionTitle("Informasi Pengiriman"),
               const SizedBox(height: 8),
-              _buildPickUpHeader(detail),
+              _buildDeliveryHeader(detail),
 
               const SizedBox(height: 16),
 
@@ -130,46 +129,46 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _sectionTitle("Daftar Barang"),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final result = await AddItemBottomSheet.show(context);
-
-                      if (result != null) {
-                        setState(() {
-                          final qtyValue =
-                              double.tryParse(result["total"].toString()) ?? 0;
-
-                          final weightValue =
-                              double.tryParse(result["weight"].toString()) ?? 0;
-
-                          final newItem = ItemEntity(
-                            id: DateTime.now().millisecondsSinceEpoch,
-                            name: result["name"],
-                            qty: qtyValue.toInt(),
-                            uom: '',
-                            weight: weightValue,
-                            actualWeight: weightValue,
-                            productOption: result["name"],
-                          );
-
-                          _localItems!.add(newItem);
-                          checkedItems[newItem.id] = false;
-                        });
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: AppColors.primaryShade,
-                      padding: const EdgeInsets.all(8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      "+ Tambah Barang",
-                      style: AppTypography.xSmallNormalPrimary,
-                    ),
-                  ),
+                  // ElevatedButton(
+                  //   onPressed: () async {
+                  //     final result = await AddItemBottomSheet.show(context);
+                  //
+                  //     if (result != null) {
+                  //       setState(() {
+                  //         final qtyValue =
+                  //             double.tryParse(result["total"].toString()) ?? 0;
+                  //
+                  //         final weightValue =
+                  //             double.tryParse(result["weight"].toString()) ?? 0;
+                  //
+                  //         final newItem = ItemEntity(
+                  //           id: DateTime.now().millisecondsSinceEpoch,
+                  //           name: result["name"],
+                  //           qty: qtyValue.toInt(),
+                  //           uom: '',
+                  //           weight: weightValue,
+                  //           actualWeight: weightValue,
+                  //           productOption: result["name"],
+                  //         );
+                  //
+                  //         _localItems!.add(newItem);
+                  //         checkedItems[newItem.id] = false;
+                  //       });
+                  //     }
+                  //   },
+                  //   style: ElevatedButton.styleFrom(
+                  //     elevation: 0,
+                  //     backgroundColor: AppColors.primaryShade,
+                  //     padding: const EdgeInsets.all(8),
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(12),
+                  //     ),
+                  //   ),
+                  //   child: const Text(
+                  //     "+ Tambah Barang",
+                  //     style: AppTypography.xSmallNormalPrimary,
+                  //   ),
+                  // ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -204,7 +203,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
     );
   }
 
-  Widget _buildPickUpHeader(PickUpEntity detail) {
+  Widget _buildDeliveryHeader(DeliveryEntity detail) {
     return TaskCard(
       id: detail.id,
       code: detail.code,
@@ -216,7 +215,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
       address: detail.address,
       isShowBottomNext: false,
       isHistory: false,
-      isPickUp: true,
+      isPickUp: false,
     );
   }
 
@@ -274,7 +273,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
     );
   }
 
-  Widget _buildHandoverForm(PickUpEntity detail) {
+  Widget _buildHandoverForm(DeliveryEntity detail) {
     return Container(
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -316,7 +315,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
     String title,
     String name,
     String type,
-    int pickupId, {
+    int deliveryId, {
     required String? signatureBase64,
     required ValueChanged<String> onSaved,
   }) {
@@ -346,7 +345,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
                     _showSignaturePreview(
                       name,
                       title,
-                      pickupId,
+                      deliveryId,
                       type,
                       signatureBase64,
                       onSaved,
@@ -360,7 +359,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
                       builder: (_) => DigitalSignBottomSheet(
                         title: title,
                         name: name,
-                        pickupId: pickupId,
+                        deliveryId: deliveryId,
                         type: type,
                       ),
                     );
@@ -419,8 +418,8 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
           if (action == 'retake') {
             if (await PermissionHelper.camera()) {
               final imagePath = await context.push<String>(
-                '/camera',
-                extra: {"pickupId": widget.id},
+                '/camera-delivery',
+                extra: {"DeliveryId": widget.id},
               );
               if (imagePath != null) {
                 setState(() => receiptImagePath = imagePath);
@@ -447,8 +446,8 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
               _orangeButton("Unggah Bukti", () async {
                 if (await PermissionHelper.camera()) {
                   final imagePath = await context.push<String>(
-                    '/camera',
-                    extra: {"pickupId": widget.id},
+                    '/camera-delivery',
+                    extra: {"deliveryId": widget.id},
                   );
                   if (imagePath != null) {
                     setState(() => receiptImagePath = imagePath);
@@ -478,8 +477,8 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
           _orangeButton("Unggah Bukti", () async {
             if (await PermissionHelper.camera()) {
               final imagePath = await context.push<String>(
-                '/camera',
-                extra: {"pickupId": widget.id},
+                '/camera-delivery',
+                extra: {"deliveryId": widget.id},
               );
               if (imagePath != null) {
                 setState(() => receiptImagePath = imagePath);
@@ -552,7 +551,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => FinishConfirmationBottomSheet(pickupId: widget.id),
+      builder: (_) => FinishConfirmationBottomSheet(deliveryId: widget.id),
     );
 
     if (result == true && context.mounted) {
@@ -565,7 +564,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
   void _showSignaturePreview(
     name,
     title,
-    pickupId,
+    DeliveryId,
     type,
     String base64,
     ValueChanged<String> onResign,
@@ -588,7 +587,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         builder: (_) => DigitalSignBottomSheet(
           name: name,
           title: title,
-          pickupId: pickupId,
+          deliveryId: DeliveryId,
           type: type,
         ),
       );

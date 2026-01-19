@@ -132,6 +132,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                               address: t.address,
                               isShowBottomNext: true,
                               isHistory: true,
+                              isPickUp: filter == TaskFilter.pickup,
                             ),
                           ),
                         ],

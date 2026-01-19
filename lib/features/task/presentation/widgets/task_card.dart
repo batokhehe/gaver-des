@@ -14,6 +14,7 @@ class TaskCard extends StatelessWidget {
   final String address;
   final bool isShowBottomNext;
   final bool isHistory;
+  final bool isPickUp;
 
   const TaskCard({
     super.key,
@@ -27,6 +28,7 @@ class TaskCard extends StatelessWidget {
     required this.address,
     required this.isShowBottomNext,
     required this.isHistory,
+    required this.isPickUp,
   });
 
   @override
@@ -131,7 +133,9 @@ class TaskCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                           onTap: () {
                             context.push(
-                              '/pickup-detail/$id?history=$isHistory',
+                              isPickUp
+                                  ? '/pickup-detail/$id?history=$isHistory'
+                                  : '/delivery-detail/$id?history=$isHistory',
                             );
                           },
                           child: Image.asset(

@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
-import 'package:gaver_des/features/pick_up/domain/entities/pick_up_entity.dart';
-import 'package:gaver_des/features/pick_up/presentation/widgets/item_card.dart';
+import 'package:gaver_des/features/delivery/domain/entities/delivery_entity.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -16,19 +15,20 @@ import '../../../../core/navigation/tab_index_provider.dart';
 import '../../../task/presentation/widgets/task_card.dart';
 import '../../../task/providers/task_viewmodel.dart';
 import '../../domain/entities/item_entity.dart';
-import '../../providers/pickup_items_provider.dart';
+import '../../providers/delivery_items_provider.dart';
+import '../widgets/item_card.dart';
 
-class PickUpPage extends ConsumerStatefulWidget {
+class DeliveryPage extends ConsumerStatefulWidget {
   final int id;
   final bool isHistory;
 
-  const PickUpPage({super.key, required this.id, required this.isHistory});
+  const DeliveryPage({super.key, required this.id, required this.isHistory});
 
   @override
-  ConsumerState<PickUpPage> createState() => _PickUpPageState();
+  ConsumerState<DeliveryPage> createState() => _DeliveryPageState();
 }
 
-class _PickUpPageState extends ConsumerState<PickUpPage> {
+class _DeliveryPageState extends ConsumerState<DeliveryPage> {
   late TransformationController _transformController;
 
   @override
@@ -45,7 +45,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    final dataAsync = ref.watch(pickupProvider(widget.id));
+    final dataAsync = ref.watch(deliveryProvider(widget.id));
 
     return Scaffold(
       backgroundColor: AppColors.greyBg,
@@ -108,7 +108,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
     );
   }
 
-  Widget _buildInfo(PickUpEntity detail) {
+  Widget _buildInfo(DeliveryEntity detail) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -129,7 +129,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
               const SizedBox(height: 8),
               Text("Informasi Pengiriman", style: AppTypography.smallBoldBlack),
               const SizedBox(height: 8),
-              _buildPickUpHeader(detail),
+              _buildDeliveryHeader(detail),
 
               const SizedBox(height: 16),
               if (widget.isHistory) _buildHandoverForm(detail),
@@ -147,7 +147,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
     );
   }
 
-  Widget _buildQr(PickUpEntity detail) {
+  Widget _buildQr(DeliveryEntity detail) {
     return Center(
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -169,7 +169,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
     );
   }
 
-  Widget _buildPickUpHeader(PickUpEntity detail) {
+  Widget _buildDeliveryHeader(DeliveryEntity detail) {
     return TaskCard(
       id: detail.id,
       code: detail.code,
@@ -181,7 +181,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
       address: detail.address,
       isShowBottomNext: false,
       isHistory: false,
-      isPickUp: true,
+      isPickUp: false,
     );
   }
 
@@ -201,7 +201,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
         return ItemCard(
           code: item.productOption,
           name: item.name,
-          status: "Pick up",
+          status: "Delivery",
           statusColor: Colors.orange,
           total: "${item.qty} Qty",
           weight: "${item.weight} ${item.uom}",
@@ -227,8 +227,8 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
           onPressed: () async {
             try {
               await ref
-                  .read(pickupActionControllerProvider.notifier)
-                  .startPickup(widget.id);
+                  .read(deliveryActionControllerProvider.notifier)
+                  .startDelivery(widget.id);
 
               ref.refresh(taskDashboardResponseProvider.future);
               ref.read(tabIndexProvider.notifier).state = 0;
@@ -280,7 +280,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
     );
   }
 
-  Widget _buildHandoverForm(PickUpEntity detail) {
+  Widget _buildHandoverForm(DeliveryEntity detail) {
     return Container(
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(vertical: 6),

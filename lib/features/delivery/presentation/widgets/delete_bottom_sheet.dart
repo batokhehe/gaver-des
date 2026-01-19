@@ -1,27 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:gaver_des/features/task/presentation/widgets/task_card.dart';
-import 'package:go_router/go_router.dart';
+import 'package:gaver_des/core/theme/app_colors.dart';
 
 import '../../../../core/theme/app_typography.dart';
-import '../../data/models/task_item.dart';
 
-class TaskInfoBottomSheet extends StatelessWidget {
-  final VoidCallback onGoToTask;
-
-  TaskInfoBottomSheet({super.key, required this.onGoToTask});
-
-  final List<TaskItem> shipments = [
-    TaskItem(
-      id: 0,
-      code: "PKO.2025.11.0005",
-      hub: "Hub Jakarta Selatan",
-      status: "Pick up",
-      statusColor: Colors.orange,
-      item: 3,
-      vendor: "PT. Priskia Muda Jaya",
-      address: "Jl. Palmerah Barat No. 22, Gelora",
-    ),
-  ];
+class DeleteBottomSheet extends StatelessWidget {
+  const DeleteBottomSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -34,16 +17,16 @@ class TaskInfoBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // HEADER
+          // TITLE
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "Tugas Baru!",
+                "Hapus Barang",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
               GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: () => Navigator.pop(context, false),
                 child: const Icon(Icons.close, size: 24),
               ),
             ],
@@ -51,43 +34,41 @@ class TaskInfoBottomSheet extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          ...shipments.map(
-            (task) => TaskCard(
-              id: task.id,
-              code: task.code,
-              hub: task.hub,
-              status: task.status,
-              statusColor: task.statusColor,
-              item: task.item,
-              vendor: task.vendor,
-              address: task.address,
-              isShowBottomNext: true,
-              isHistory: false,
-              isPickUp: true,
-            ),
+          Image.asset("assets/images/delete.png", width: 120, height: 120),
+          const SizedBox(height: 16),
+
+          const Text(
+            "Yakin Menghapus Barang?",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+
+          const SizedBox(height: 8),
+          const Text(
+            "Barang yang dihapus akan hilang dari daftar muatan. Pastikan data sudah benar sebelum melanjutkan.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black54),
           ),
 
           const SizedBox(height: 24),
 
           Row(
             children: [
+              // CANCEL BUTTON
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    onGoToTask();
-                  },
+                  onPressed: () => Navigator.pop(context, false),
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
-                    backgroundColor: const Color(0xFFFFF1E9),
+                    backgroundColor: const Color(0xFFF1F1F1),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: const Text(
-                    "Daftar Tugas",
+                    "Batal",
                     style: TextStyle(
-                      color: Color(0xFFD55A24),
+                      color: Colors.black87,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -96,26 +77,21 @@ class TaskInfoBottomSheet extends StatelessWidget {
 
               const SizedBox(width: 12),
 
+              // DELETE BUTTON
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-
-                    Future.microtask(() {
-                      if (context.mounted) {
-                        context.push('/pick-up');
-                      }
-                    });
-                  },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD55A24),
+                    backgroundColor: AppColors.danger,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
-                    "Detail Tugas",
+                  onPressed: () {
+                    Navigator.pop(context, true); // return true
+                  },
+                  child: const Text(
+                    "Hapus Sekarang",
                     style: AppTypography.smallBoldWhite,
                   ),
                 ),

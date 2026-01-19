@@ -123,6 +123,7 @@ class _TaskPageState extends ConsumerState<TaskPage> with RouteAware {
                         address: t.address,
                         isShowBottomNext: true,
                         isHistory: false,
+                        isPickUp: filter == TaskFilter.pickup,
                       );
                     },
                   );
