@@ -7,6 +7,7 @@ class DecimalTextField extends StatelessWidget {
   final String hintText;
   final ValueChanged<String> onChanged;
   final int? maxDecimal;
+  final bool? enabled;
 
   const DecimalTextField({
     super.key,
@@ -14,6 +15,7 @@ class DecimalTextField extends StatelessWidget {
     required this.hintText,
     required this.onChanged,
     this.maxDecimal,
+    this.enabled,
   });
 
   @override
@@ -23,6 +25,7 @@ class DecimalTextField extends StatelessWidget {
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [FilteringTextInputFormatter.allow(_decimalRegex())],
       onChanged: onChanged,
+      enabled: enabled ?? true,
       decoration: InputDecoration(
         hintText: hintText,
         border: InputBorder.none,

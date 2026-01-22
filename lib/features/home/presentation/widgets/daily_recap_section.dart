@@ -1,33 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 
-class DailyRecapSection extends StatelessWidget {
+import '../../dashboard_provider.dart';
+
+class DailyRecapSection extends ConsumerWidget {
   const DailyRecapSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summaryAsync = ref.watch(taskDashboardSummaryProvider);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          Expanded(
-            child: StatCard(
-              title: "Selesai",
-              count: 2,
-              color: AppColors.primary,
-              icColor: "orange",
+      child: summaryAsync.when(
+        loading: () => const SizedBox(
+          height: 80,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+        error: (_, __) => const SizedBox(
+          height: 80,
+          child: Center(child: Text('Gagal memuat rekap')),
+        ),
+        data: (summary) => Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                title: "Selesai",
+                count: summary.finished,
+                color: AppColors.primary,
+                icColor: "orange",
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: StatCard(
-              title: "Progress",
-              count: 5,
-              color: Colors.deepPurpleAccent,
-              icColor: "purple",
+            const SizedBox(width: 8),
+            Expanded(
+              child: StatCard(
+                title: "Progress",
+                count: summary.assigned,
+                color: Colors.deepPurpleAccent,
+                icColor: "purple",
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

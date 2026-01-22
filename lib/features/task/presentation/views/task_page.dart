@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/app/providers.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/navigation/tab_index_provider.dart';
+import '../../../../core/utils/formatter.dart';
 import '../../providers/task_filter_provider.dart';
 import '../../providers/task_viewmodel.dart';
 import '../widgets/task_card.dart';
@@ -104,29 +106,51 @@ class _TaskPageState extends ConsumerState<TaskPage> with RouteAware {
                     );
                   }
 
-                  return ListView.builder(
+                  final groupedTasks = groupTasksByDate(tasks);
+
+                  return ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: tasks.length,
-                    itemBuilder: (_, i) {
-                      final t = tasks[i];
-                      return TaskCard(
-                        id: t.id,
-                        code: t.code,
-                        hub: t.hub,
-                        status: t.status,
-                        statusColor: t.status == 'active'
-                            ? Colors.orange
-                            : Colors.blue,
-                        item: t.itemCount,
-                        vendor: t.vendor,
-                        address: t.address,
-                        isShowBottomNext: true,
-                        isHistory: false,
-                        isPickUp: filter == TaskFilter.pickup,
-                        mapsLink: t.pickupMapsOption,
+                    children: groupedTasks.entries.map((entry) {
+                      final date = entry.key;
+                      final items = entry.value;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              formatDate(date),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ),
+                          ...items.map(
+                            (t) => TaskCard(
+                              id: t.id,
+                              code: t.code,
+                              hub: t.hub,
+                              status: t.status,
+                              statusColor: t.status == 'assigned'
+                                  ? Colors.orange
+                                  : Colors.blue,
+                              item: t.itemCount,
+                              vendor: t.vendor,
+                              address: t.address,
+                              isShowBottomNext: true,
+                              isHistory: false,
+                              isPickUp: filter == TaskFilter.pickup,
+                              mapsLink: t.pickupMapsOption,
+                            ),
+                          ),
+                        ],
                       );
-                    },
+                    }).toList(),
                   );
                 },
               ),
@@ -156,8 +180,11 @@ class _TaskPageState extends ConsumerState<TaskPage> with RouteAware {
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(16, 54, 16, 0),
           child: Row(
-            children: const [
-              Icon(Icons.arrow_back, color: Colors.white),
+            children: [
+              GestureDetector(
+                onTap: () => ref.read(tabIndexProvider.notifier).state = 0,
+                child: const Icon(Icons.arrow_back, color: Colors.white),
+              ),
               SizedBox(width: 12),
               Text(
                 "Daftar Tugas",

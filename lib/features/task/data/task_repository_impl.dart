@@ -11,7 +11,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<BaseResponse<List<TaskModel>>> getPickUpTasks({
-    required String status,
+    String? status,
     required String search,
     String? sortCol,
     DateTime? startDate,
@@ -67,6 +67,23 @@ class TaskRepositoryImpl implements TaskRepository {
       endDate: endDate,
       driverId: driverId,
       page: page,
+    );
+  }
+
+  @override
+  Future<BaseResponse<List<TaskModel>>> getAllPickUpTasks({
+    String? status,
+    String? search,
+    String? sortCol,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    return api.fetchPickUp(
+      status: status,
+      search: search,
+      sortCol: sortCol,
+      startDate: startDate,
+      endDate: endDate,
     );
   }
 }

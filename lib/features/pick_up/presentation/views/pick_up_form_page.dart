@@ -11,11 +11,9 @@ import 'package:gaver_des/features/pick_up/presentation/widgets/finish_confirmat
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/helpers/permission_helper.dart';
-import '../../../../core/navigation/tab_index_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../task/presentation/widgets/task_card.dart';
-import '../../../task/providers/task_viewmodel.dart';
 import '../../data/pick_up_status.dart';
 import '../../providers/pickup_items_provider.dart';
 import '../widgets/add_item_bottom_sheet.dart';
@@ -45,6 +43,17 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
   String? handedBySignatureBase64;
   String? receivedBySignatureBase64;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _resetLocalState();
+
+      ref.invalidate(pickupProvider(widget.id));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +159,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: AppColors.info,
+                      backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 2,
@@ -285,7 +294,8 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
         _weightControllers.putIfAbsent(
           item.id,
-          () => TextEditingController(text: item.weight.toString()),
+          () =>
+              TextEditingController(text: (item.qty * item.weight).toString()),
         );
 
         _nameControllers.putIfAbsent(
@@ -299,7 +309,12 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
           nameController: _nameControllers[item.id]!,
           checked: checked,
           onQtyChanged: (v) {
-            item.qty = int.tryParse(v) ?? 0;
+            final qty = int.tryParse(v) ?? 0;
+            item.qty = qty;
+
+            final totalWeight = qty * item.weight;
+
+            _weightControllers[item.id]!.text = totalWeight.toStringAsFixed(2);
           },
           onWeightChanged: (v) {
             item.weight = double.tryParse(v) ?? 0;
@@ -544,6 +559,8 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
   }
 
   Widget _buildBottomButton() {
+    final isEnabled = _allItemsChecked();
+
     return Container(
       padding: const EdgeInsets.all(16),
       color: Colors.white,
@@ -552,16 +569,19 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         height: 50,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryDark,
+            backgroundColor: isEnabled
+                ? AppColors.primaryDark
+                : Colors.grey.shade400,
+
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          onPressed: () {
-            _showFinishConfirmation(context);
-          },
+          onPressed: isEnabled
+              ? () => _showFinishConfirmation(context)
+              : null, // 🔥 NULL = DISABLED
           child: const Text(
-            "Selesaikan Tugas",
+            "Selesaikan Pickup",
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,
@@ -649,5 +669,34 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         onResign(base64Encode(result));
       }
     }
+  }
+
+  void _resetLocalState() {
+    _localItems = null;
+    checkedItems.clear();
+
+    for (final c in _qtyControllers.values) {
+      c.dispose();
+    }
+    for (final c in _weightControllers.values) {
+      c.dispose();
+    }
+    for (final c in _nameControllers.values) {
+      c.dispose();
+    }
+
+    _qtyControllers.clear();
+    _weightControllers.clear();
+    _nameControllers.clear();
+
+    receiptImagePath = null;
+    handedBySignatureBase64 = null;
+    receivedBySignatureBase64 = null;
+  }
+
+  bool _allItemsChecked() {
+    if (_localItems == null || _localItems!.isEmpty) return false;
+
+    return _localItems!.every((item) => checkedItems[item.id] == true);
   }
 }

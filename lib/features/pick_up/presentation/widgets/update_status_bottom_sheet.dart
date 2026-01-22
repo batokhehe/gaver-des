@@ -68,7 +68,7 @@ class _UpdateStatusBottomSheetState extends State<UpdateStatusBottomSheet> {
 
   Widget _title() {
     return const Text(
-      "Update Status",
+      "Pembatalan Pickup",
       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
     );
   }

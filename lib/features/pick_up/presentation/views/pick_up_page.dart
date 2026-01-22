@@ -204,7 +204,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
           status: "Pick up",
           statusColor: Colors.orange,
           total: "${item.qty} Qty",
-          weight: "${item.weight} ${item.uom}",
+          weight: "${item.weight * item.qty} ${item.uom}",
         );
       },
     );

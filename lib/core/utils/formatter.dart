@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import '../../features/task/domain/entities/task_entity.dart';
+
 String formatDate(DateTime date) {
   final months = [
     'Januari',
@@ -25,4 +27,22 @@ String formatDate(DateTime date) {
 Future<String> imagePathToBase64(String path) async {
   final bytes = await File(path).readAsBytes();
   return base64Encode(bytes);
+}
+
+Map<DateTime, List<TaskEntity>> groupTasksByDate(List<TaskEntity> tasks) {
+  final Map<DateTime, List<TaskEntity>> grouped = {};
+
+  for (final task in tasks) {
+    final date = DateTime(
+      task.pickupDate.year,
+      task.pickupDate.month,
+      task.pickupDate.day,
+    );
+    grouped.putIfAbsent(date, () => []);
+    grouped[date]!.add(task);
+  }
+
+  final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+
+  return {for (final key in sortedKeys) key: grouped[key]!};
 }

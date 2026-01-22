@@ -10,22 +10,27 @@ class TaskApi {
   TaskApi(this.dio);
 
   Future<BaseResponse<List<TaskModel>>> fetchPickUp({
-    required String status,
+    String? status,
     String? search,
     String? sortCol,
     DateTime? startDate,
     DateTime? endDate,
-    required int driverId,
-    int page = 1,
+    int? driverId,
+    int? page = 1,
   }) async {
     final query = <String, dynamic>{
       'page': page,
       'limit': 10,
-      'status': status,
       'sortCol': sortCol ?? 'pickupDate',
       'sortOrder': 'asc',
       'driverId': driverId,
     };
+
+    print('query $query');
+
+    if (status != null && status.isNotEmpty) {
+      query['status'] = status;
+    }
 
     // 🔍 search opsional
     if (search != null && search.isNotEmpty) {

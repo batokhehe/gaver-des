@@ -4,7 +4,7 @@ import 'models/task_model.dart';
 
 abstract class TaskRepository {
   Future<BaseResponse<List<TaskModel>>> getPickUpTasks({
-    required String status,
+    String? status,
     required String search,
     String sortCol,
     DateTime? startDate,
@@ -30,5 +30,12 @@ abstract class TaskRepository {
     DateTime? startDate,
     DateTime? endDate,
     int page = 1,
+  });
+
+  Future<BaseResponse<List<TaskModel>>> getAllPickUpTasks({
+    String? search,
+    String? sortCol,
+    DateTime? startDate,
+    DateTime? endDate,
   });
 }

@@ -126,7 +126,7 @@ class FinishConfirmationBottomSheet extends ConsumerWidget {
                     ),
                   ),
                   child: const Text(
-                    "Selesaikan Tugas",
+                    "Selesaikan Pickup",
                     style: AppTypography.smallNormalWhite,
                   ),
                 ),

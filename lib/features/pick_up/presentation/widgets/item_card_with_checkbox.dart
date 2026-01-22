@@ -137,6 +137,7 @@ class ItemCardWithCheckbox extends StatelessWidget {
                           controller: weightController,
                           hintText: 'Weight',
                           onChanged: onWeightChanged,
+                          enabled: false,
                         ),
                       ),
                       SizedBox(width: 8),

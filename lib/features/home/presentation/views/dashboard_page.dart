@@ -5,9 +5,11 @@ import 'package:gaver_des/core/theme/app_typography.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/navigation/tab_index_provider.dart';
+import '../../../profile/data/driver_status.dart';
 import '../../../task/providers/task_viewmodel.dart';
 import '../../../user/providers/user_provider.dart';
 import '../../../user/providers/user_repository_provider.dart';
+import '../../dashboard_provider.dart';
 import '../widgets/daily_recap_section.dart';
 import '../widgets/header_section.dart';
 import '../widgets/job_active_card.dart';
@@ -25,7 +27,12 @@ class DashboardPage extends ConsumerWidget {
     final email = ref.watch(userEmailProvider);
     final vehicle = ref.watch(userVehicleProvider);
 
+    final user = ref.watch(userProvider).value;
+    final statusType = parseDriverStatus(user?.status);
+    final driverStatus = mapDriverStatus(statusType);
+
     final dashboardAsync = ref.watch(taskDashboardResponseProvider);
+    final summary = ref.watch(taskDashboardSummaryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.greyBg,
@@ -34,6 +41,7 @@ class DashboardPage extends ConsumerWidget {
           await ref.read(userRepositoryProvider).fetchUserFromApi();
           await ref.refresh(userProvider.future);
           await ref.refresh(taskDashboardResponseProvider.future);
+          await ref.refresh(taskDashboardSummaryProvider.future);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -55,17 +63,14 @@ class DashboardPage extends ConsumerWidget {
                   HeaderSection(
                     header: fullName,
                     isTransparent: true,
-                    subHeader: dashboardAsync.when(
+                    subHeader: summary.when(
                       loading: () => 'Memuat tugas hari ini...',
-                      error: (_, __) => 'Gagal memuat tugas',
-                      data: (res) {
-                        final count = res.totalData;
-                        if (count == 0) {
-                          return 'Anda belum memiliki tugas aktif hari ini';
-                        }
-                        return 'Anda memiliki $count tugas aktif hari ini';
-                      },
+                      error: (error, _) => 'Gagal memuat tugas: $error',
+                      data: (s) => s.assigned == 0
+                          ? 'Anda belum mendapatkan penugasan kembali untuk hari ini'
+                          : 'Anda memiliki ${s.assigned} tugas hari ini yang belum terselesaikan',
                     ),
+                    status: driverStatus,
                   ),
                 ],
               ),
@@ -129,10 +134,7 @@ class DashboardPage extends ConsumerWidget {
                       const DailyRecapSection(),
 
                       sectionTitle("Kendaraan Aktif"),
-                      VehicleCard(
-                        vehicleName:
-                            vehicle?.vehicleIdentificationNumber ?? "-",
-                      ),
+                      VehicleCard(vehicle: vehicle),
                     ],
                   ),
                 ),

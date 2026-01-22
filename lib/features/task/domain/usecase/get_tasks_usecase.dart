@@ -76,4 +76,18 @@ class GetTasksUseCase {
       search: search,
     );
   }
+
+  Future<BaseResponse<List<TaskModel>>> getAllPickup({
+    required String search,
+    required String sortCol,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    return repository.getAllPickUpTasks(
+      search: search,
+      sortCol: sortCol,
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
 }

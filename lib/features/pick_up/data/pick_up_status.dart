@@ -1,14 +1,10 @@
-enum PickupStatus {
-  canceledPickup,
-  accident,
-  canceled,
-}
+enum PickupStatus { canceledPickup, accident, canceled }
 
 extension PickupStatusExt on PickupStatus {
   String get label {
     switch (this) {
       case PickupStatus.canceledPickup:
-        return 'Batal Diambil';
+        return 'Kembalikan Tugas';
       case PickupStatus.accident:
         return 'Ada Kecelakaan';
       case PickupStatus.canceled:

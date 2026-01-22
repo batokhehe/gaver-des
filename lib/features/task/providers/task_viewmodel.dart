@@ -146,6 +146,17 @@ final taskDashboardResponseProvider =
       );
     });
 
+final taskResponseProvider =
+    FutureProvider.autoDispose<BaseResponse<List<TaskModel>>>((ref) async {
+      final driverId = ref.watch(userIdProvider);
+      final useCase = ref.read(getTasksUseCaseProvider);
+
+      return withGlobalLoading(
+        ref,
+        () => useCase.getActivePickup(driverId: driverId, search: ''),
+      );
+    });
+
 final taskDashboardListProvider = Provider.autoDispose<List<TaskEntity>>((ref) {
   final async = ref.watch(taskDashboardResponseProvider);
 
@@ -157,3 +168,18 @@ final taskActivePickupCountProvider = Provider.autoDispose<int>((ref) {
 
   return async.maybeWhen(data: (res) => res.data.length, orElse: () => 0);
 });
+
+final taskAllResponseProvider =
+    FutureProvider.autoDispose<BaseResponse<List<TaskModel>>>((ref) async {
+      final useCase = ref.read(getTasksUseCaseProvider);
+      final today = DateTime.now();
+      return withGlobalLoading(
+        ref,
+        () => useCase.getAllPickup(
+          search: '',
+          sortCol: 'pickupDate',
+          startDate: today,
+          endDate: today,
+        ),
+      );
+    });

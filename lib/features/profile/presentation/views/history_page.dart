@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 
 import '../../../../core/utils/formatter.dart';
-import '../../../task/domain/entities/task_entity.dart';
 import '../../../task/presentation/widgets/task_card.dart';
 import '../../../task/presentation/widgets/task_empty_state_card.dart';
 import '../../../task/providers/task_filter_provider.dart';
@@ -334,23 +333,5 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       startDate: result["startDate"],
       endDate: result["endDate"],
     );
-  }
-
-  Map<DateTime, List<TaskEntity>> groupTasksByDate(List<TaskEntity> tasks) {
-    final Map<DateTime, List<TaskEntity>> grouped = {};
-
-    for (final task in tasks) {
-      final date = DateTime(
-        task.pickupDate.year,
-        task.pickupDate.month,
-        task.pickupDate.day,
-      );
-      grouped.putIfAbsent(date, () => []);
-      grouped[date]!.add(task);
-    }
-
-    final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
-
-    return {for (final key in sortedKeys) key: grouped[key]!};
   }
 }

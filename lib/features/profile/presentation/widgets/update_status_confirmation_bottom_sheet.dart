@@ -89,9 +89,9 @@ class UpdateStatusConfirmationBottomSheet extends ConsumerWidget {
                 child: ElevatedButton(
                   onPressed: () => context.pop(true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryDark,
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: const Text(
