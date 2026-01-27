@@ -23,11 +23,20 @@ class _SplashPageState extends ConsumerState<SplashPage>
   }
 
   Future<void> _startSplash() async {
+    debugPrint("Splash start");
+
     final repo = ref.read(authRepositoryProvider);
     final loggedIn = await repo.isLoggedIn();
+
+    debugPrint("Logged in: $loggedIn");
+
     if (!mounted) return;
     ref.read(authStateProvider.notifier).state = loggedIn;
+
     await Future.delayed(const Duration(seconds: 2));
+
+    debugPrint("Splash finished");
+
     if (!mounted) return;
     ref.read(hasShownSplashProvider.notifier).state = true;
   }

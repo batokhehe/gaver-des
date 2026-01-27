@@ -43,4 +43,21 @@ class PickUpApi {
       data: {"pickupOrderId": pickupOrderId, "file": base64File},
     );
   }
+
+  Future<String?> fetchPickupSign({
+    required int pickupOrderId,
+    required String type, // owner | receiver | proof
+    required String apiValue
+  }) async {
+    final res = await dio.get(
+      '/pickup-order-$apiValue/pickup-order/$pickupOrderId',
+      queryParameters: {'type': type},
+    );
+
+    final list = res.data['data'] as List;
+
+    if (list.isEmpty) return null;
+
+    return list.first['file']; // base64
+  }
 }

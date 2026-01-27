@@ -36,16 +36,40 @@ final hasShownSplashProvider = StateProvider<bool>((ref) => false);
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
-final routerProvider = Provider<GoRouter>((ref) {
-  final hasShownSplash = ref.watch(hasShownSplashProvider);
-  final authState = ref.watch(authStateProvider);
+final routerRefreshProvider = Provider<ChangeNotifier>((ref) {
+  final controller = StreamController<void>();
 
+  final authSub = ref.read(authStateProvider.notifier).stream.listen((_) {
+    controller.add(null);
+  });
+
+  final splashSub = ref.read(hasShownSplashProvider.notifier).stream.listen((
+    _,
+  ) {
+    controller.add(null);
+  });
+
+  ref.onDispose(() {
+    authSub.cancel();
+    splashSub.cancel();
+    controller.close();
+  });
+
+  return GoRouterRefreshStream(controller.stream);
+});
+
+final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: "/splash",
+
+    refreshListenable: ref.watch(routerRefreshProvider),
 
     observers: [ChuckerFlutter.navigatorObserver, routeObserver],
 
     redirect: (context, state) {
+      final hasShownSplash = ref.read(hasShownSplashProvider);
+      final authState = ref.read(authStateProvider);
+
       final atSplash = state.matchedLocation == "/splash";
       final atLogin = state.matchedLocation == "/login";
 
@@ -53,7 +77,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return atSplash ? null : "/splash";
       }
 
-      if (authState == null) return null;
+      if (authState == null) {
+        return atSplash ? null : "/splash";
+      }
 
       if (authState == false && !atLogin) {
         return "/login";
@@ -70,10 +96,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: "/splash", builder: (_, __) => const SplashPage()),
       GoRoute(path: "/login", builder: (_, __) => const LoginPage()),
       GoRoute(
-        path: '/home',
+        path: "/home",
         builder: (context, state) {
           final finished = state.uri.queryParameters['finished'] == 'true';
-
           return HomePage(showFinishSnackBar: finished);
         },
       ),

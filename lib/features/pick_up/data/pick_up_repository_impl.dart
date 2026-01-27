@@ -19,4 +19,19 @@ class PickUpRepositoryImpl implements PickUpRepository {
   Future<void> updateStatusPickUp(int id, String status) async {
     await api.updateStatus(id, status);
   }
+
+  @override
+  Future<String?> getPickupSign({
+    required int pickupOrderId,
+    required String type,
+  }) async {
+    /// 🔥 LOGIC apiValue DI SINI
+    final apiValue = type == 'proof' ? 'proofs' : 'signs';
+
+    return api.fetchPickupSign(
+      pickupOrderId: pickupOrderId,
+      type: type,
+      apiValue: apiValue,
+    );
+  }
 }

@@ -15,6 +15,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/navigation/tab_index_provider.dart';
 import '../../../task/presentation/widgets/task_card.dart';
 import '../../../task/providers/task_viewmodel.dart';
+import '../../data/models/pick_up_sign_param.dart';
 import '../../domain/entities/item_entity.dart';
 import '../../providers/pickup_items_provider.dart';
 
@@ -292,77 +293,112 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _signatureSection("Diserahkan Oleh", detail.ownerSign),
+          _signatureFromApi(
+            "Diserahkan Oleh",
+            detail.id,
+            'owner',
+            'tanda tangan',
+          ),
           const SizedBox(height: 36),
-          _signatureSection("Diterima Oleh", detail.receiverSign),
+          _signatureFromApi(
+            "Diterima Oleh",
+            detail.id,
+            'receiver',
+            'tanda tangan',
+          ),
           const SizedBox(height: 36),
-          _signatureSection("Bukti Pengiriman", detail.proof),
+          _signatureFromApi("Bukti Pengiriman", detail.id, 'proof', 'gambar'),
         ],
       ),
     );
   }
 
-  Widget _signatureSection(String title, String? base64) {
+  Widget _signatureFromApi(
+    String title,
+    int pickupOrderId,
+    String type,
+    String errorText,
+  ) {
+    final apiValue = type == 'proof' ? 'proofs' : 'signs';
+    final signAsync = ref.watch(
+      pickupSignProvider(
+        PickupSignParam(pickupOrderId: pickupOrderId, type: type),
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: AppTypography.xSmallNormalBlack),
         const SizedBox(height: 6),
 
-        if (base64 == null || base64.isEmpty)
-          const Text(
-            "Tidak ada data",
-            style: TextStyle(fontSize: 12, color: Colors.grey),
-          )
-        else
-          _signaturePreview(base64),
+        signAsync.when(
+          loading: () => const CircularProgressIndicator(strokeWidth: 2),
+          error: (_, __) => _signaturePreview(null, type, errorText),
+          // 🔥 PAKAI PREVIEW
+          data: (base64) =>
+              _signaturePreview(base64, type, errorText), // 🔥 SAMA
+        ),
       ],
     );
   }
 
-  Widget _signaturePreview(String base64) {
+  Widget _signaturePreview(String? base64, String type, String errorText) {
+    if (base64 == null || base64.isEmpty) {
+      return _signatureError(type, "Tidak ada data");
+    }
+
     try {
       final bytes = base64Decode(base64);
 
       return GestureDetector(
         onTap: () => _showZoomSignature(bytes),
         child: Container(
-          width: double.infinity,
+          width: double.infinity, // ✅ container full
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.black12),
           ),
-          child: Image.memory(bytes, height: 140, fit: BoxFit.contain),
+          child: Image.memory(
+            bytes,
+            width: double.infinity, // 🔥 WAJIB
+            height: 160,
+            fit: BoxFit.fitWidth, // 🔥 BIAR PENUH KE SAMPING
+          ),
         ),
       );
     } catch (_) {
-      return Container(
-        width: double.infinity, // ✅ FULL WIDTH
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.red.shade50,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.red.shade200),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.broken_image, color: Colors.red, size: 18),
-            SizedBox(width: 8),
-            Text(
-              "Gagal memuat tanda tangan",
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      );
+      return _signatureError(type, "Gagal memuat $errorText");
     }
+  }
+
+  Widget _signatureError(String type, String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.broken_image, color: Colors.red, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            message,
+            style: const TextStyle(
+              color: Colors.red,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showZoomSignature(Uint8List bytes) {

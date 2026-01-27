@@ -17,11 +17,31 @@ import '../widgets/job_empty_card.dart';
 import '../widgets/task_info_bottom_sheet.dart';
 import '../widgets/vehicle_card.dart';
 
-class DashboardPage extends ConsumerWidget {
+class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends ConsumerState<DashboardPage> {
+  Future<void> _refreshDashboard() async {
+    await ref.read(userRepositoryProvider).fetchUserFromApi();
+    ref.invalidate(userProvider);
+    ref.invalidate(taskAllResponseProvider);
+    ref.invalidate(taskDashboardResponseProvider);
+    ref.invalidate(taskDashboardSummaryProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    /// 🔥 LISTEN TAB CHANGE (HARUS DI BUILD)
+    ref.listen<int>(tabIndexProvider, (previous, next) {
+      if (previous != next && next == 0) {
+        _refreshDashboard();
+      }
+    });
+
     final bool hasActiveJob = true;
     final fullName = ref.watch(userNameProvider);
     final email = ref.watch(userEmailProvider);
@@ -38,109 +58,102 @@ class DashboardPage extends ConsumerWidget {
       backgroundColor: AppColors.greyBg,
       body: RefreshIndicator(
         onRefresh: () async {
-          await ref.read(userRepositoryProvider).fetchUserFromApi();
-          await ref.refresh(userProvider.future);
-          await ref.refresh(taskDashboardResponseProvider.future);
-          await ref.refresh(taskDashboardSummaryProvider.future);
+          await _refreshDashboard();
         },
-        child: SingleChildScrollView(
+        child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: 150,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage("assets/images/bg_header.png"),
-                        fit: BoxFit.cover,
-                        alignment: Alignment.topCenter,
-                      ),
-                    ),
-                  ),
-                  HeaderSection(
-                    header: fullName,
-                    isTransparent: true,
-                    subHeader: summary.when(
-                      loading: () => 'Memuat tugas hari ini...',
-                      error: (error, _) => 'Gagal memuat tugas: $error',
-                      data: (s) => s.assigned == 0
-                          ? 'Anda belum mendapatkan penugasan kembali untuk hari ini'
-                          : 'Anda memiliki ${s.assigned} tugas hari ini yang belum terselesaikan',
-                    ),
-                    status: driverStatus,
-                  ),
-                ],
-              ),
-              Transform.translate(
-                offset: const Offset(0, -30),
-                child: Container(
+          children: [
+            Stack(
+              children: [
+                Container(
                   width: double.infinity,
+                  height: 150,
                   decoration: const BoxDecoration(
-                    color: AppColors.greyBg,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(28),
-                      topRight: Radius.circular(28),
+                    image: DecorationImage(
+                      image: AssetImage("assets/images/bg_header.png"),
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      sectionTitle("Pekerjaan Aktif"),
-                      dashboardAsync.when(
-                        loading: () => const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: SizedBox(height: 120),
-                        ),
-                        error: (_, __) => JobEmptyCard(
-                          type: 'Pick Up',
-                          onTap: () {
-                            ref.read(tabIndexProvider.notifier).state = 1;
-                          },
-                        ),
-                        data: (tasks) {
-                          if (tasks.totalData == 0) {
-                            return JobEmptyCard(
-                              type: 'Pick Up',
-                              onTap: () {
-                                ref.read(tabIndexProvider.notifier).state = 1;
-                              },
-                            );
-                          }
-                          return JobActiveCard(
-                            job: tasks.data.first,
-                            type: 'Pick Up',
-                            onOpenTask: () {
-                              context.push(
-                                '/pickup-form/${tasks.data.first.id}',
-                              );
-                            },
-                          );
-                        },
+                ),
+                HeaderSection(
+                  header: fullName,
+                  isTransparent: true,
+                  subHeader: summary.when(
+                    loading: () => 'Memuat tugas hari ini...',
+                    error: (error, _) => 'Gagal memuat tugas: $error',
+                    data: (s) => s.assigned == 0
+                        ? 'Anda belum mendapatkan penugasan kembali untuk hari ini'
+                        : 'Anda memiliki ${s.assigned} tugas hari ini yang belum terselesaikan',
+                  ),
+                  status: driverStatus,
+                ),
+              ],
+            ),
+            Transform.translate(
+              offset: const Offset(0, -30),
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: AppColors.greyBg,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(28),
+                    topRight: Radius.circular(28),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    sectionTitle("Pekerjaan Aktif"),
+                    dashboardAsync.when(
+                      loading: () => const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: SizedBox(height: 120),
                       ),
-
-                      const SizedBox(height: 16),
-                      JobEmptyCard(
-                        type: 'Delivery',
+                      error: (_, __) => JobEmptyCard(
+                        type: 'Pick Up',
                         onTap: () {
                           ref.read(tabIndexProvider.notifier).state = 1;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      data: (tasks) {
+                        if (tasks.totalData == 0) {
+                          return JobEmptyCard(
+                            type: 'Pick Up',
+                            onTap: () {
+                              ref.read(tabIndexProvider.notifier).state = 1;
+                            },
+                          );
+                        }
+                        return JobActiveCard(
+                          job: tasks.data.first,
+                          type: 'Pick Up',
+                          onOpenTask: () {
+                            context.push('/pickup-form/${tasks.data.first.id}');
+                          },
+                        );
+                      },
+                    ),
 
-                      sectionTitle("Rekap Harian"),
-                      const DailyRecapSection(),
+                    const SizedBox(height: 16),
+                    JobEmptyCard(
+                      type: 'Delivery',
+                      onTap: () {
+                        ref.read(tabIndexProvider.notifier).state = 1;
+                      },
+                    ),
+                    const SizedBox(height: 16),
 
-                      sectionTitle("Kendaraan Aktif"),
-                      VehicleCard(vehicle: vehicle),
-                    ],
-                  ),
+                    sectionTitle("Rekap Harian"),
+                    const DailyRecapSection(),
+
+                    sectionTitle("Kendaraan Aktif"),
+                    VehicleCard(vehicle: vehicle),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
