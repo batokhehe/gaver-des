@@ -73,14 +73,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       final atSplash = state.matchedLocation == "/splash";
       final atLogin = state.matchedLocation == "/login";
 
+      // 1️⃣ Selama splash belum selesai → tahan di splash
       if (!hasShownSplash) {
         return atSplash ? null : "/splash";
       }
 
-      if (authState == null) {
-        return atSplash ? null : "/splash";
-      }
-
+      // 2️⃣ Setelah splash selesai, authState HARUS sudah ada
       if (authState == false && !atLogin) {
         return "/login";
       }
