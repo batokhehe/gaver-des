@@ -12,6 +12,7 @@ class PickUpEntity {
   final String receiverSign;
   final String proof;
   final List<ItemEntity> items;
+  final int businessPartnerId;
 
   const PickUpEntity({
     required this.id,
@@ -25,5 +26,6 @@ class PickUpEntity {
     required this.ownerSign,
     required this.receiverSign,
     required this.proof,
+    required this.businessPartnerId,
   });
 }

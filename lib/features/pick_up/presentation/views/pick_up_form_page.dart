@@ -10,7 +10,9 @@ import 'package:gaver_des/features/pick_up/presentation/widgets/digital_sign_bot
 import 'package:gaver_des/features/pick_up/presentation/widgets/finish_confirmation_bottom_sheet.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/data/model/business_partner_product_model.dart';
 import '../../../../core/helpers/permission_helper.dart';
+import '../../../../core/provider/business_partner_product_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../task/presentation/widgets/task_card.dart';
@@ -119,6 +121,9 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
   }
 
   Widget _buildContent(PickUpEntity detail) {
+    final productsAsync = ref.watch(
+      businessPartnerProductsProvider(detail.businessPartnerId),
+    );
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -191,50 +196,60 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _sectionTitle("Daftar Barang"),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final result = await AddItemBottomSheet.show(context);
+                  productsAsync.when(
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                    data: (products) => ElevatedButton(
+                      onPressed: () async {
+                        final result = await AddItemBottomSheet.show(
+                          context,
+                          products: products, // 🔥 SEKARANG ADA
+                        );
 
-                      if (result != null) {
-                        setState(() {
-                          final qtyValue =
-                              double.tryParse(result["total"].toString()) ?? 0;
-
-                          final weightValue =
-                              double.tryParse(result["weight"].toString()) ?? 0;
+                        if (result != null) {
+                          final product =
+                              result["product"] as BusinessPartnerProduct;
+                          final qty = int.tryParse(result["qty"]) ?? 0;
 
                           final newItem = ItemEntity(
                             id: DateTime.now().millisecondsSinceEpoch,
-                            name: result["name"],
-                            qty: qtyValue.toInt(),
+                            name: product.name,
+                            qty: qty,
                             uom: '',
-                            weight: weightValue,
-                            actualWeight: weightValue,
-                            productOption: result["name"],
+                            weight: product.kgPerCarton,
+                            actualWeight: qty * product.kgPerCarton,
+                            productOption: product.name,
                           );
 
-                          _localItems!.add(newItem);
-                          checkedItems[newItem.id] = false;
-                        });
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: AppColors.primaryShade,
-                      padding: const EdgeInsets.all(8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                          setState(() {
+                            _localItems!.add(newItem);
+                            checkedItems[newItem.id] = false;
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: AppColors.primaryShade,
+                        padding: const EdgeInsets.all(8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      "+ Tambah Barang",
-                      style: AppTypography.xSmallNormalPrimary,
+                      child: const Text(
+                        "+ Tambah Barang",
+                        style: AppTypography.xSmallNormalPrimary,
+                      ),
                     ),
                   ),
                 ],
               ),
+
               const SizedBox(height: 8),
-              _buildItemList(),
+              productsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text(e.toString()),
+                data: (products) => _buildItemList(products),
+              ),
 
               const SizedBox(height: 12),
               _sectionTitle("Form Serah Terima (Opsional)"),
@@ -281,7 +296,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
     );
   }
 
-  Widget _buildItemList() {
+  Widget _buildItemList(List<BusinessPartnerProduct> products) {
     return Column(
       children: List.generate(_localItems!.length, (i) {
         final item = _localItems![i];
@@ -305,37 +320,36 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         );
 
         return ItemCardWithCheckbox(
+          products: products,
+          nameController: _nameControllers[item.id]!,
           qtyController: _qtyControllers[item.id]!,
           weightController: _weightControllers[item.id]!,
-          nameController: _nameControllers[item.id]!,
           checked: checked,
-          onQtyChanged: (v) {
-            final qty = int.tryParse(v) ?? 0;
-            item.qty = qty;
-
-            final totalWeight = qty * item.weight;
-
-            _weightControllers[item.id]!.text = totalWeight.toStringAsFixed(2);
-          },
-          onWeightChanged: (v) {
-            item.weight = double.tryParse(v) ?? 0;
-          },
-          onChecked: (value) {
-            setState(() => checkedItems[item.id] = value);
-          },
-          onNameChanged: (value) {
-            item.name = value;
-          },
+          onChecked: (v) => setState(() => checkedItems[item.id] = v),
           onDelete: () async {
             final confirm = await _showDeleteConfirmation(context);
             if (confirm == true) {
               setState(() {
                 _localItems!.removeAt(i);
                 checkedItems.remove(item.id);
-                _qtyControllers.remove(item.id)?.dispose();
-                _weightControllers.remove(item.id)?.dispose();
               });
             }
+          },
+          onProductSelected: (product) {
+            item.name = product.name;
+            item.weight = product.kgPerCarton;
+
+            final qty = int.tryParse(_qtyControllers[item.id]!.text) ?? 0;
+            final totalWeight = qty * product.kgPerCarton;
+
+            _weightControllers[item.id]!.text = totalWeight.toStringAsFixed(2);
+          },
+          onQtyChanged: (v) {
+            final qty = int.tryParse(v) ?? 0;
+            item.qty = qty;
+
+            final totalWeight = qty * item.weight;
+            _weightControllers[item.id]!.text = totalWeight.toStringAsFixed(2);
           },
         );
       }),

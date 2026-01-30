@@ -11,6 +11,7 @@ class PickupModel {
   final String ownerSign;
   final String receiverSign;
   final String proof;
+  final int businessPartnerId;
   final List<ItemModel> items;
 
   PickupModel({
@@ -25,6 +26,7 @@ class PickupModel {
     required this.ownerSign,
     required this.receiverSign,
     required this.proof,
+    required this.businessPartnerId,
   });
 
   factory PickupModel.fromJson(Map<String, dynamic> json) {
@@ -39,6 +41,7 @@ class PickupModel {
       pickupDate: DateTime.parse(json['pickupDate']),
       vendor: json['businessPartnerOption'] ?? '-',
       address: json['pickupAddressOption'] ?? '-',
+      businessPartnerId: json['businessPartnerId'] ?? 0,
       items: (json['items'] as List)
           .map((e) => ItemModel.fromJson(e))
           .toList(),
