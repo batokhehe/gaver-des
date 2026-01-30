@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../features/auth/providers/auth_provider.dart';
 import '../errors/error_parser.dart';
 
@@ -24,8 +25,14 @@ class ApiInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    if (err.response?.statusCode == 401) {
+      // 🔥 SATU pintu logout
+      await ref.read(authStateProvider.notifier).logout();
+    }
+
     final appError = ErrorParser.parse(err);
+
     handler.reject(
       DioException(requestOptions: err.requestOptions, error: appError),
     );

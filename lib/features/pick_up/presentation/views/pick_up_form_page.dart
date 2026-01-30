@@ -294,8 +294,9 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
         _weightControllers.putIfAbsent(
           item.id,
-          () =>
-              TextEditingController(text: (item.qty * item.weight).toString()),
+          () => TextEditingController(
+            text: (item.qty * item.weight).toStringAsFixed(2),
+          ),
         );
 
         _nameControllers.putIfAbsent(

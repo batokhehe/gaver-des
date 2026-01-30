@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/errors/app_exception.dart';
 import '../../../core/errors/error_parser.dart';
-import '../../user/providers/user_provider.dart';
 import '../domain/login_usecase.dart';
 import 'auth_provider.dart';
 
@@ -25,8 +25,9 @@ class LoginViewModel extends StateNotifier<AsyncValue<void>> {
         );
         return;
       }
-      ref.read(authStateProvider.notifier).state = true;
-      ref.invalidate(userProvider);
+
+      await ref.read(authStateProvider.notifier).loginSuccess();
+
       state = const AsyncValue.data(null);
     } catch (e, st) {
       final err = ErrorParser.parse(e);

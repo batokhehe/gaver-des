@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaver_des/app/providers.dart';
 import 'package:gaver_des/features/delivery/presentation/views/delivery_page.dart';
 import 'package:gaver_des/features/pick_up/presentation/views/pick_up_form_page.dart';
 import 'package:gaver_des/features/pick_up/presentation/views/pick_up_page.dart';
@@ -59,13 +60,12 @@ final routerRefreshProvider = Provider<ChangeNotifier>((ref) {
 });
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final navigatorKey = ref.read(navigatorKeyProvider);
   return GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: "/splash",
-
     refreshListenable: ref.watch(routerRefreshProvider),
-
     observers: [ChuckerFlutter.navigatorObserver, routeObserver],
-
     redirect: (context, state) {
       final hasShownSplash = ref.read(hasShownSplashProvider);
       final authState = ref.read(authStateProvider);

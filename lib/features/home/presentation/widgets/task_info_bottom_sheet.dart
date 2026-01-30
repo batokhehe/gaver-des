@@ -62,6 +62,7 @@ class TaskInfoBottomSheet extends StatelessWidget {
               item: task.item,
               vendor: task.vendor,
               address: task.address,
+              mapsLink: task.pickupMapsOption,
               isShowBottomNext: true,
               isHistory: false,
               isPickUp: true,

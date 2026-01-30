@@ -127,6 +127,7 @@ class ItemCardWithCheckbox extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
+                    color: AppColors.greyBg,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.black12),
                   ),

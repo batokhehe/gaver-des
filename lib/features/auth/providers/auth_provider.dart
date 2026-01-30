@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/dio_client.dart';
+import '../../user/providers/user_provider.dart';
 import '../data/auth_api.dart';
 import '../data/auth_repository.dart';
 import '../domain/login_usecase.dart';
@@ -14,8 +15,6 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(ref.read(authApiProvider), ref);
 });
 
-final authStateProvider = StateProvider<bool?>((ref) => null);
-
 final loginUseCaseProvider = Provider((ref) {
   return LoginUseCase(ref.read(authRepositoryProvider));
 });
@@ -26,10 +25,26 @@ final loginViewModelProvider =
       return LoginViewModel(useCase, ref);
     });
 
-final logoutProvider = Provider((ref) {
-  return () async {
-    await ref.read(authRepositoryProvider).logout();
-    ref.read(authStateProvider.notifier).state = false;
-    return true;
-  };
+final authStateProvider = StateNotifierProvider<AuthNotifier, bool?>((ref) {
+  final repo = ref.read(authRepositoryProvider);
+  return AuthNotifier(repo, ref);
 });
+
+class AuthNotifier extends StateNotifier<bool?> {
+  final AuthRepository repository;
+  final Ref ref;
+
+  AuthNotifier(this.repository, this.ref) : super(null);
+
+  /// Login berhasil (token SUDAH disimpan di repository)
+  Future<void> loginSuccess() async {
+    state = true;
+    ref.invalidate(userProvider);
+  }
+
+  /// Logout dari mana saja (UI / interceptor / dll)
+  Future<void> logout() async {
+    await repository.logout();
+    state = false;
+  }
+}

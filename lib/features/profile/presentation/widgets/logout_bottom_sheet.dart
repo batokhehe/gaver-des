@@ -89,10 +89,9 @@ class LogoutBottomSheet extends ConsumerWidget {
                   ),
                   onPressed: () async {
                     Navigator.pop(context);
-
-                    await ref.read(logoutProvider)();
-                    context.go('/login');
+                    await ref.read(authStateProvider.notifier).logout();
                   },
+
                   child: Text(
                     "Keluar Sekarang",
                     style: AppTypography.smallBoldWhite,

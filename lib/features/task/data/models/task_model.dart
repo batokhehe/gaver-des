@@ -21,7 +21,7 @@ class TaskModel extends TaskEntity {
       status: json['status'] ?? '-',
       itemCount: (json['items'] as List?)?.length ?? 0,
       vendor: json['businessPartnerOption'] ?? '-',
-      address: json['businessPartnerAddressOption'] ?? '-',
+      address: json['pickupAddressOption'] ?? '-',
       pickupMapsOption: json['pickupMapsOption'],
       pickupDate: json['pickupDate'] != null
           ? DateTime.parse(json['pickupDate'])
