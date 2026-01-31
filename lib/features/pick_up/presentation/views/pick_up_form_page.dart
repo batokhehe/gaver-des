@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -43,6 +44,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
   final Map<int, TextEditingController> _weightControllers = {};
   final Map<int, TextEditingController> _nameControllers = {};
 
+  List<String> attachmentPaths = [];
   String? handedBySignatureBase64;
   String? receivedBySignatureBase64;
 
@@ -252,9 +254,9 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
               ),
 
               const SizedBox(height: 12),
-              _sectionTitle("Form Serah Terima (Opsional)"),
+              _sectionTitle("Lampiran (Opsional)"),
               const SizedBox(height: 12),
-              _buildHandoverForm(detail),
+              _buildAttachmentGrid(),
 
               const SizedBox(height: 12),
               _sectionTitle("Bukti Pengiriman"),
@@ -713,5 +715,109 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
     if (_localItems == null || _localItems!.isEmpty) return false;
 
     return _localItems!.every((item) => checkedItems[item.id] == true);
+  }
+
+  Widget _buildAttachmentGrid() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: attachmentPaths.length + 1,
+        // + tombol tambah
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+        ),
+        itemBuilder: (context, index) {
+          if (index == attachmentPaths.length) {
+            return _addAttachmentButton();
+          }
+
+          final path = attachmentPaths[index];
+          return _attachmentItem(path, index);
+        },
+      ),
+    );
+  }
+
+  Widget _addAttachmentButton() {
+    return InkWell(
+      onTap: () async {
+        if (await PermissionHelper.camera()) {
+          final imagePath = await context.push<String>(
+            '/camera',
+            extra: {
+              "pickupId": widget.id, // 🔥 WAJIB
+            },
+          );
+
+          if (imagePath != null) {
+            setState(() => attachmentPaths.add(imagePath));
+          }
+        }
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.greyBg,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.black12),
+        ),
+        child: const Center(
+          child: Icon(Icons.add, size: 32, color: Colors.grey),
+        ),
+      ),
+    );
+  }
+
+  Widget _attachmentItem(String path, int index) {
+    return Stack(
+      children: [
+        InkWell(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              backgroundColor: Colors.transparent,
+              isScrollControlled: true,
+              builder: (_) => ReceiptPreviewBottomSheet(imagePath: path),
+            );
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.file(
+              File(path),
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () {
+              setState(() => attachmentPaths.removeAt(index));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.close, size: 14, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
