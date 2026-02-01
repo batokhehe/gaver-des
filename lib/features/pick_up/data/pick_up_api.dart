@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:gaver_des/features/pick_up/data/models/pick_up_model.dart';
 
 import '../../../core/errors/app_exception.dart';
+import 'models/order_proof_model.dart';
 
 class PickUpApi {
   final Dio dio;
@@ -47,7 +50,7 @@ class PickUpApi {
   Future<String?> fetchPickupSign({
     required int pickupOrderId,
     required String type, // owner | receiver | proof
-    required String apiValue
+    required String apiValue,
   }) async {
     final res = await dio.get(
       '/pickup-order-$apiValue/pickup-order/$pickupOrderId',
@@ -59,5 +62,35 @@ class PickUpApi {
     if (list.isEmpty) return null;
 
     return list.first['file']; // base64
+  }
+
+  Future<String> uploadFile(File file) async {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(
+        file.path,
+        filename: file.path.split('/').last,
+      ),
+    });
+
+    final res = await dio.post(
+      '/uploads',
+      data: formData,
+      options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+    );
+
+    return res.data['data']['url']; // 🔥 URL S3
+  }
+
+  Future<OrderProofModel> submitPickupProof({
+    required int pickupOrderId,
+    required String fileUrl,
+    String type = 'attachment',
+  }) async {
+    final res = await dio.post(
+      '/pickup-order-proofs',
+      data: {'pickupOrderId': pickupOrderId, 'file': fileUrl, 'type': type},
+    );
+
+    return OrderProofModel.fromJson(res.data['data']);
   }
 }

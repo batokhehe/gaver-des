@@ -26,7 +26,13 @@ class MyApp extends ConsumerWidget {
     return MaterialApp.router(
       routerConfig: router,
       builder: (context, child) {
-        return GlobalLoadingOverlay(child: child!);
+        return SafeArea(
+          top: true,
+          bottom: true,
+          left: false,
+          right: false,
+          child: GlobalLoadingOverlay(child: child!),
+        );
       },
     );
   }

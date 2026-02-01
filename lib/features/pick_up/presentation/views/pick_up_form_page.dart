@@ -10,12 +10,14 @@ import 'package:gaver_des/features/pick_up/presentation/widgets/delete_bottom_sh
 import 'package:gaver_des/features/pick_up/presentation/widgets/digital_sign_bottom_sheet.dart';
 import 'package:gaver_des/features/pick_up/presentation/widgets/finish_confirmation_bottom_sheet.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/data/model/business_partner_product_model.dart';
 import '../../../../core/helpers/permission_helper.dart';
 import '../../../../core/provider/business_partner_product_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/formatter.dart';
 import '../../../task/presentation/widgets/task_card.dart';
 import '../../data/pick_up_status.dart';
 import '../../providers/pickup_items_provider.dart';
@@ -45,6 +47,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
   final Map<int, TextEditingController> _nameControllers = {};
 
   List<String> attachmentPaths = [];
+  String? proofImageUrl;
   String? handedBySignatureBase64;
   String? receivedBySignatureBase64;
 
@@ -70,6 +73,13 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         error: (e, _) => Center(child: Text(e.toString())),
         data: (detail) {
           _localItems ??= List.from(detail.items);
+
+          // if (attachmentPaths.isEmpty && detail.attachments != null) {
+          //   attachmentPaths = detail.attachments!
+          //       .where((e) => e.type == 'attachment')
+          //       .map((e) => e.file)
+          //       .toList();
+          // }
 
           return Column(
             children: [
@@ -486,61 +496,25 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
   }
 
   Widget _buildReceiptForm() {
-    if (receiptImagePath != null) {
-      final fileName = receiptImagePath!.split('/').last;
+    if (proofImageUrl != null) {
+      final fileName = proofImageUrl!.split('/').last;
 
-      return InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () async {
-          final action = await showModalBottomSheet<String>(
-            context: context,
-            backgroundColor: Colors.transparent,
-            isScrollControlled: true,
-            builder: (_) =>
-                ReceiptPreviewBottomSheet(imagePath: receiptImagePath!),
-          );
-
-          if (action == 'retake') {
-            if (await PermissionHelper.camera()) {
-              final imagePath = await context.push<String>(
-                '/camera',
-                extra: {"pickupId": widget.id},
-              );
-              if (imagePath != null) {
-                setState(() => receiptImagePath = imagePath);
-              }
-            }
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-          ),
-          child: Column(
-            children: [
-              Image.asset(width: 40, "assets/icons/ic_clipboard_tick.png"),
-              const SizedBox(height: 8),
-              Text(
-                fileName,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              _orangeButton("Unggah Bukti", () async {
-                if (await PermissionHelper.camera()) {
-                  final imagePath = await context.push<String>(
-                    '/camera',
-                    extra: {"pickupId": widget.id},
-                  );
-                  if (imagePath != null) {
-                    setState(() => receiptImagePath = imagePath);
-                  }
-                }
-              }),
-            ],
-          ),
+      return Container(
+        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Image.network(proofImageUrl!, height: 120, fit: BoxFit.cover),
+            const SizedBox(height: 8),
+            Text(fileName, style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            _orangeButton("Ganti Bukti", () => _pickAndUploadProof()),
+          ],
         ),
       );
     }
@@ -559,17 +533,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
           const SizedBox(height: 6),
           const Text("Belum Ada Bukti Pengiriman"),
           const SizedBox(height: 10),
-          _orangeButton("Unggah Bukti", () async {
-            if (await PermissionHelper.camera()) {
-              final imagePath = await context.push<String>(
-                '/camera',
-                extra: {"pickupId": widget.id},
-              );
-              if (imagePath != null) {
-                setState(() => receiptImagePath = imagePath);
-              }
-            }
-          }),
+          _orangeButton("Unggah Bukti", () => _pickAndUploadProof()),
         ],
       ),
     );
@@ -646,6 +610,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
 
     if (result == true && context.mounted) {
       if (result == true && context.mounted) {
+        ref.invalidate(pickupProvider(widget.id));
         context.go('/home?finished=true');
       }
     }
@@ -750,17 +715,69 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
   Widget _addAttachmentButton() {
     return InkWell(
       onTap: () async {
-        if (await PermissionHelper.camera()) {
-          final imagePath = await context.push<String>(
-            '/camera',
-            extra: {
-              "pickupId": widget.id, // 🔥 WAJIB
-            },
-          );
+        // 1️⃣ pilih sumber
+        final source = await showModalBottomSheet<ImageSource>(
+          context: context,
+          builder: (_) => SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Kamera'),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo),
+                  title: const Text('Galeri'),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        );
 
-          if (imagePath != null) {
-            setState(() => attachmentPaths.add(imagePath));
-          }
+        if (source == null) return;
+
+        // 2️⃣ permission kamera
+        if (source == ImageSource.camera && !await PermissionHelper.camera()) {
+          return;
+        }
+
+        // 3️⃣ ambil gambar
+        final imagePath = source == ImageSource.camera
+            ? await context.push<String>(
+                '/camera',
+                extra: {"pickupId": widget.id},
+              )
+            : await pickImage(source: ImageSource.gallery);
+
+        if (imagePath == null) return;
+
+        try {
+          // 4️⃣ upload multipart
+          final fileUrl = await ref
+              .read(pickUpApiProvider)
+              .uploadFile(File(imagePath));
+
+          // 5️⃣ submit link
+          final pickup = await ref.read(pickupProvider(widget.id).future);
+
+          final proof = await ref
+              .read(pickUpApiProvider)
+              .submitPickupProof(
+                pickupOrderId: pickup.id,
+                fileUrl: fileUrl,
+                type: 'attachment',
+              );
+
+          setState(() => attachmentPaths.add(proof.file));
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Gagal upload lampiran'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       },
       borderRadius: BorderRadius.circular(8),
@@ -791,11 +808,10 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.file(
-              File(path),
-              width: double.infinity,
-              height: double.infinity,
+            child: Image.network(
+              path,
               fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
             ),
           ),
         ),
@@ -819,5 +835,41 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         ),
       ],
     );
+  }
+
+  Future<void> _pickAndUploadProof() async {
+    if (!await PermissionHelper.camera()) return;
+
+    final imagePath = await context.push<String>(
+      '/camera',
+      extra: {"pickupId": widget.id},
+    );
+
+    if (imagePath == null) return;
+
+    try {
+      // 1️⃣ upload file
+      final fileUrl = await ref
+          .read(pickUpApiProvider)
+          .uploadFile(File(imagePath));
+
+      // 2️⃣ submit proof
+      final proof = await ref
+          .read(pickUpApiProvider)
+          .submitPickupProof(
+            pickupOrderId: widget.id,
+            fileUrl: fileUrl,
+            type: 'proof', // 🔥 INI BEDANYA
+          );
+
+      setState(() => proofImageUrl = proof.file);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal upload bukti pengiriman'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

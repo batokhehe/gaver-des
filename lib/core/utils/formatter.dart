@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:image_picker/image_picker.dart';
+
 import '../../features/task/domain/entities/task_entity.dart';
 
 String formatDate(DateTime date) {
@@ -45,4 +47,10 @@ Map<DateTime, List<TaskEntity>> groupTasksByDate(List<TaskEntity> tasks) {
   final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
   return {for (final key in sortedKeys) key: grouped[key]!};
+}
+
+Future<String?> pickImage({required ImageSource source}) async {
+  final picker = ImagePicker();
+  final file = await picker.pickImage(source: source, imageQuality: 80);
+  return file?.path;
 }
