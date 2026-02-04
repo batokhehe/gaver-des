@@ -8,6 +8,7 @@ class PickUpEntity {
   final DateTime pickupDate;
   final String vendor;
   final String address;
+  final String addressName;
   final String ownerSign;
   final String receiverSign;
   final String proof;
@@ -22,6 +23,7 @@ class PickUpEntity {
     required this.pickupDate,
     required this.vendor,
     required this.address,
+    required this.addressName,
     required this.items,
     required this.ownerSign,
     required this.receiverSign,

@@ -8,6 +8,7 @@ class DeliveryEntity {
   final DateTime deliveryDate;
   final String vendor;
   final String address;
+  final String addressName;
   final String ownerSign;
   final String receiverSign;
   final String proof;
@@ -22,6 +23,7 @@ class DeliveryEntity {
     required this.deliveryDate,
     required this.vendor,
     required this.address,
+    required this.addressName,
     required this.items,
     required this.ownerSign,
     required this.receiverSign,

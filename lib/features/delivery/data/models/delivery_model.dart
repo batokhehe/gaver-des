@@ -8,6 +8,7 @@ class DeliveryModel {
   final DateTime deliveryDate;
   final String vendor;
   final String address;
+  final String addressName;
   final String ownerSign;
   final String receiverSign;
   final String proof;
@@ -22,6 +23,7 @@ class DeliveryModel {
     required this.deliveryDate,
     required this.vendor,
     required this.address,
+    required this.addressName,
     required this.items,
     required this.ownerSign,
     required this.receiverSign,
@@ -40,7 +42,8 @@ class DeliveryModel {
       proof: json['proof'] ?? '-',
       deliveryDate: DateTime.parse(json['deliveryDate']),
       vendor: json['businessPartnerOption'] ?? '-',
-      address: json['pickupAddressOption'] ?? '-',
+      address: json['deliveryAddressOption'] ?? '-',
+      addressName: json['deliveryAddressName'] ?? '-',
       businessPartnerId: json['businessPartnerId'] ?? 0,
       items: (json['items'] as List)
           .map((e) => ItemModel.fromJson(e))

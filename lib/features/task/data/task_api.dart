@@ -105,13 +105,13 @@ class TaskApi {
     int page = 1,
   }) async {
     final response = await dio.get(
-      '/pickup-orders',
+      '/delivery-orders',
       queryParameters: {
         'page': page,
         'limit': 10,
         'search': search,
         'status': status,
-        'sortCol': sortCol ?? 'pickupDate',
+        'sortCol': sortCol ?? 'created_at',
         'sortOrder': 'asc',
         'driverId': driverId,
       },

@@ -180,6 +180,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
       item: detail.items.length,
       vendor: detail.vendor,
       address: detail.address,
+      addressName: detail.addressName,
       isShowBottomNext: false,
       isHistory: false,
       isPickUp: true,

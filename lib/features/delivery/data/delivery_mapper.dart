@@ -11,6 +11,7 @@ extension DeliveryMapper on DeliveryModel {
       deliveryDate: deliveryDate,
       vendor: vendor,
       address: address,
+      addressName: addressName,
       hub: hub,
       ownerSign: ownerSign,
       receiverSign: receiverSign,

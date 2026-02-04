@@ -34,6 +34,8 @@ class GetTasksUseCase {
           status: status,
           search: search,
           sortCol: sortCol,
+          startDate: startDate,
+          endDate: endDate,
         );
     }
   }

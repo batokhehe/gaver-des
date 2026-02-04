@@ -129,6 +129,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                               item: t.itemCount,
                               vendor: t.vendor,
                               address: t.address,
+                              addressName: t.addressName,
                               mapsLink: t.pickupMapsOption,
                               isShowBottomNext: true,
                               isHistory: true,

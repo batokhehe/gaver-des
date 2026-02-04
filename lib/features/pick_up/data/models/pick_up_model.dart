@@ -8,6 +8,7 @@ class PickupModel {
   final DateTime pickupDate;
   final String vendor;
   final String address;
+  final String addressName;
   final String ownerSign;
   final String receiverSign;
   final String proof;
@@ -22,6 +23,7 @@ class PickupModel {
     required this.pickupDate,
     required this.vendor,
     required this.address,
+    required this.addressName,
     required this.items,
     required this.ownerSign,
     required this.receiverSign,
@@ -41,6 +43,7 @@ class PickupModel {
       pickupDate: DateTime.parse(json['pickupDate']),
       vendor: json['businessPartnerOption'] ?? '-',
       address: json['pickupAddressOption'] ?? '-',
+      addressName: json['pickupAddressName'] ?? '-',
       businessPartnerId: json['businessPartnerId'] ?? 0,
       items: (json['items'] as List)
           .map((e) => ItemModel.fromJson(e))

@@ -12,6 +12,7 @@ extension PickupMapper on PickupModel {
       pickupDate: pickupDate,
       vendor: vendor,
       address: address,
+      addressName: addressName,
       hub: hub,
       ownerSign: ownerSign,
       receiverSign: receiverSign,

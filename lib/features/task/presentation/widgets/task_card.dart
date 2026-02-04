@@ -13,6 +13,7 @@ class TaskCard extends StatelessWidget {
   final int item;
   final String vendor;
   final String address;
+  final String addressName;
   final bool isShowBottomNext;
   final bool isHistory;
   final bool isPickUp;
@@ -28,6 +29,7 @@ class TaskCard extends StatelessWidget {
     required this.item,
     required this.vendor,
     required this.address,
+    required this.addressName,
     required this.isShowBottomNext,
     required this.isHistory,
     required this.isPickUp,
@@ -89,7 +91,7 @@ class TaskCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text("Pick up", style: AppTypography.xSmallBoldPrimary),
+                  Text(isPickUp ? 'Pick Up' : 'Delivery', style: AppTypography.xSmallBoldPrimary),
                   Text("$item Barang", style: AppTypography.xSmallNormalBlack),
                 ],
               ),
@@ -124,6 +126,7 @@ class TaskCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(vendor, style: AppTypography.smallBoldBlack),
+                    Text(addressName, style: AppTypography.smallNormalBlack),
                     Text(address, style: AppTypography.smallNormalBlack),
 
                     InkWell(

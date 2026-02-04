@@ -10,20 +10,6 @@ class TaskInfoBottomSheet extends StatelessWidget {
 
   TaskInfoBottomSheet({super.key, required this.onGoToTask});
 
-  final List<TaskItem> shipments = [
-    TaskItem(
-      id: 0,
-      code: "PKO.2025.11.0005",
-      hub: "Hub Jakarta Selatan",
-      status: "Pick up",
-      statusColor: Colors.orange,
-      item: 3,
-      vendor: "PT. Priskia Muda Jaya",
-      address: "Jl. Palmerah Barat No. 22, Gelora",
-      pickupMapsOption: null,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -52,22 +38,22 @@ class TaskInfoBottomSheet extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          ...shipments.map(
-            (task) => TaskCard(
-              id: task.id,
-              code: task.code,
-              hub: task.hub,
-              status: task.status,
-              statusColor: task.statusColor,
-              item: task.item,
-              vendor: task.vendor,
-              address: task.address,
-              mapsLink: task.pickupMapsOption,
-              isShowBottomNext: true,
-              isHistory: false,
-              isPickUp: true,
-            ),
-          ),
+          // ...shipments.map(
+          //   (task) => TaskCard(
+          //     id: task.id,
+          //     code: task.code,
+          //     hub: task.hub,
+          //     status: task.status,
+          //     statusColor: task.statusColor,
+          //     item: task.item,
+          //     vendor: task.vendor,
+          //     address: task.address,
+          //     mapsLink: task.pickupMapsOption,
+          //     isShowBottomNext: true,
+          //     isHistory: false,
+          //     isPickUp: true,
+          //   ),
+          // ),
 
           const SizedBox(height: 24),
 

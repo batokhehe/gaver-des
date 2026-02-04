@@ -302,6 +302,7 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
       item: detail.items.length,
       vendor: detail.vendor,
       address: detail.address,
+      addressName: detail.addressName,
       isShowBottomNext: false,
       isHistory: false,
       isPickUp: true,
