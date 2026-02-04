@@ -108,7 +108,7 @@ class FinishConfirmationBottomSheet extends ConsumerWidget {
                     }
 
                     // 🔁 REFRESH DASHBOARD API
-                    ref.refresh(taskDashboardResponseProvider.future);
+                    ref.refresh(pickUpDashboardResponseProvider.future);
 
                     // 🏠 PINDAH KE DASHBOARD
                     ref.read(tabIndexProvider.notifier).state = 0;

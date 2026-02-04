@@ -232,7 +232,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
                   .read(pickupActionControllerProvider.notifier)
                   .startPickup(widget.id);
 
-              ref.refresh(taskDashboardResponseProvider.future);
+              ref.refresh(pickUpDashboardResponseProvider.future);
               ref.read(tabIndexProvider.notifier).state = 0;
               context.go('/home');
             } catch (e) {

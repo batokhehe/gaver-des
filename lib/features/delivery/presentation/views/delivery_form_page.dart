@@ -7,9 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../core/data/model/business_partner_product_model.dart';
 import '../../../../core/helpers/permission_helper.dart';
-import '../../../../core/provider/business_partner_product_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/formatter.dart';
@@ -133,9 +131,6 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
   }
 
   Widget _buildContent(DeliveryEntity detail) {
-    final productsAsync = ref.watch(
-      businessPartnerProductsProvider(detail.businessPartnerId),
-    );
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -208,61 +203,56 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _sectionTitle("Daftar Barang"),
-                  productsAsync.when(
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
-                    data: (products) => ElevatedButton(
-                      onPressed: () async {
-                        final result = await AddItemBottomSheet.show(
-                          context,
-                          products: products, // 🔥 SEKARANG ADA
-                        );
-
-                        if (result != null) {
-                          final product =
-                              result["product"] as BusinessPartnerProduct;
-                          final qty = int.tryParse(result["qty"]) ?? 0;
-
-                          final newItem = ItemEntity(
-                            id: DateTime.now().millisecondsSinceEpoch,
-                            name: product.name,
-                            qty: qty,
-                            uom: '',
-                            weight: product.kgPerCarton,
-                            actualWeight: qty * product.kgPerCarton,
-                            productOption: product.name,
-                          );
-
-                          setState(() {
-                            _localItems!.add(newItem);
-                            checkedItems[newItem.id] = false;
-                          });
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: AppColors.primaryShade,
-                        padding: const EdgeInsets.all(8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        "+ Tambah Barang",
-                        style: AppTypography.xSmallNormalPrimary,
-                      ),
-                    ),
-                  ),
+                  // productsAsync.when(
+                  //   loading: () => const SizedBox.shrink(),
+                  //   error: (_, __) => const SizedBox.shrink(),
+                  //   data: (products) => ElevatedButton(
+                  //     onPressed: () async {
+                  //       final result = await AddItemBottomSheet.show(
+                  //         context,
+                  //         products: products, // 🔥 SEKARANG ADA
+                  //       );
+                  //
+                  //       if (result != null) {
+                  //         final product =
+                  //             result["product"] as BusinessPartnerProduct;
+                  //         final qty = int.tryParse(result["qty"]) ?? 0;
+                  //
+                  //         final newItem = ItemEntity(
+                  //           id: DateTime.now().millisecondsSinceEpoch,
+                  //           name: product.name,
+                  //           qty: qty,
+                  //           uom: '',
+                  //           weight: product.kgPerCarton,
+                  //           actualWeight: qty * product.kgPerCarton,
+                  //           productOption: product.name,
+                  //         );
+                  //
+                  //         setState(() {
+                  //           _localItems!.add(newItem);
+                  //           checkedItems[newItem.id] = false;
+                  //         });
+                  //       }
+                  //     },
+                  //     style: ElevatedButton.styleFrom(
+                  //       elevation: 0,
+                  //       backgroundColor: AppColors.primaryShade,
+                  //       padding: const EdgeInsets.all(8),
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //       ),
+                  //     ),
+                  //     child: const Text(
+                  //       "+ Tambah Barang",
+                  //       style: AppTypography.xSmallNormalPrimary,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
 
               const SizedBox(height: 8),
-              productsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text(e.toString()),
-                data: (products) => _buildItemList(products),
-              ),
-
+              _buildItemList(),
               const SizedBox(height: 12),
               _sectionTitle("Lampiran (Opsional)"),
               const SizedBox(height: 12),
@@ -309,7 +299,7 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
     );
   }
 
-  Widget _buildItemList(List<BusinessPartnerProduct> products) {
+  Widget _buildItemList() {
     return Column(
       children: List.generate(_localItems!.length, (i) {
         final item = _localItems![i];
@@ -333,7 +323,6 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
         );
 
         return ItemCardWithCheckbox(
-          products: products,
           nameController: _nameControllers[item.id]!,
           qtyController: _qtyControllers[item.id]!,
           weightController: _weightControllers[item.id]!,
@@ -347,22 +336,6 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
                 checkedItems.remove(item.id);
               });
             }
-          },
-          onProductSelected: (product) {
-            item.name = product.name;
-            item.weight = product.kgPerCarton;
-
-            final qty = int.tryParse(_qtyControllers[item.id]!.text) ?? 0;
-            final totalWeight = qty * product.kgPerCarton;
-
-            _weightControllers[item.id]!.text = totalWeight.toStringAsFixed(2);
-          },
-          onQtyChanged: (v) {
-            final qty = int.tryParse(v) ?? 0;
-            item.qty = qty;
-
-            final totalWeight = qty * item.weight;
-            _weightControllers[item.id]!.text = totalWeight.toStringAsFixed(2);
           },
         );
       }),
@@ -747,7 +720,7 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
         // 3️⃣ ambil gambar
         final imagePath = source == ImageSource.camera
             ? await context.push<String>(
-                '/camera',
+                '/camera-delivery',
                 extra: {"deliveryId": widget.id},
               )
             : await pickImage(source: ImageSource.gallery);
@@ -842,7 +815,7 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
     if (!await PermissionHelper.camera()) return;
 
     final imagePath = await context.push<String>(
-      '/camera',
+      '/camera-delivery',
       extra: {"deliveryId": widget.id},
     );
 

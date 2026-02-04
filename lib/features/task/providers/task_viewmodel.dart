@@ -138,7 +138,7 @@ final taskListProvider = Provider.autoDispose<List<TaskEntity>>((ref) {
 /// 6️⃣ DASHBOARD (ACTIVE PICKUP)
 /// =======================================================
 
-final taskDashboardResponseProvider =
+final pickUpDashboardResponseProvider =
     FutureProvider.autoDispose<BaseResponse<List<TaskModel>>>((ref) async {
       final driverId = ref.watch(userIdProvider);
       final useCase = ref.read(getTasksUseCaseProvider);
@@ -146,6 +146,17 @@ final taskDashboardResponseProvider =
       return withGlobalLoading(
         ref,
         () => useCase.getActivePickup(driverId: driverId, search: ''),
+      );
+    });
+
+final deliveryDashboardResponseProvider =
+    FutureProvider.autoDispose<BaseResponse<List<TaskModel>>>((ref) async {
+      final driverId = ref.watch(userIdProvider);
+      final useCase = ref.read(getTasksUseCaseProvider);
+
+      return withGlobalLoading(
+        ref,
+        () => useCase.getActiveDelivery(driverId: driverId, search: ''),
       );
     });
 
@@ -161,13 +172,13 @@ final taskResponseProvider =
     });
 
 final taskDashboardListProvider = Provider.autoDispose<List<TaskEntity>>((ref) {
-  final async = ref.watch(taskDashboardResponseProvider);
+  final async = ref.watch(pickUpDashboardResponseProvider);
 
   return async.maybeWhen(data: (res) => res.data, orElse: () => []);
 });
 
 final taskActivePickupCountProvider = Provider.autoDispose<int>((ref) {
-  final async = ref.watch(taskDashboardResponseProvider);
+  final async = ref.watch(pickUpDashboardResponseProvider);
 
   return async.maybeWhen(data: (res) => res.data.length, orElse: () => 0);
 });

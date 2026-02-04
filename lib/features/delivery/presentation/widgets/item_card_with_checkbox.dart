@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
 import '../../../../core/data/model/business_partner_product_model.dart';
+import '../../../../core/widgets/alphanumeric_text_field.dart';
 import '../../../../core/widgets/decimal_text_field.dart';
 
 class ItemCardWithCheckbox extends StatelessWidget {
-  final List<BusinessPartnerProduct> products;
-
   final TextEditingController nameController;
   final TextEditingController qtyController;
   final TextEditingController weightController;
@@ -14,20 +13,15 @@ class ItemCardWithCheckbox extends StatelessWidget {
   final bool checked;
   final VoidCallback onDelete;
   final ValueChanged<bool> onChecked;
-  final ValueChanged<BusinessPartnerProduct> onProductSelected;
-  final ValueChanged<String> onQtyChanged;
 
   const ItemCardWithCheckbox({
     super.key,
-    required this.products,
     required this.nameController,
     required this.qtyController,
     required this.weightController,
     required this.checked,
     required this.onDelete,
     required this.onChecked,
-    required this.onProductSelected,
-    required this.onQtyChanged,
   });
 
   @override
@@ -48,51 +42,25 @@ class ItemCardWithCheckbox extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.black12),
                   ),
-                  child: DropdownButtonFormField<BusinessPartnerProduct>(
-                    isExpanded: true,
-
-                    value: products.any((e) => e.name == nameController.text)
-                        ? products.firstWhere(
-                            (e) => e.name == nameController.text,
-                          )
-                        : null,
-
-                    hint: const Text(
-                      'Pilih Produk',
-                      style: AppTypography.xSmallNormalBlack,
-                    ),
-                    icon: const Icon(Icons.keyboard_arrow_down),
-
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                        vertical: 14, // 🔥 INI YANG NGARUH KE HEIGHT
-                      ),
-                    ),
-
-                    items: products.map((product) {
-                      return DropdownMenuItem<BusinessPartnerProduct>(
-                        value: product,
-                        child: Text(
-                          product.name,
-                          style: AppTypography.xSmallNormalBlack,
-                          overflow: TextOverflow.ellipsis,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: AlphanumericTextField(
+                          controller: nameController,
+                          hintText: 'Name',
+                          onChanged: (String value) {},
+                          enabled: false,
                         ),
-                      );
-                    }).toList(),
-
-                    onChanged: (product) {
-                      if (product == null) return;
-
-                      nameController.text = product.name;
-                      onProductSelected(product);
-                    },
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -138,7 +106,8 @@ class ItemCardWithCheckbox extends StatelessWidget {
                         child: DecimalTextField(
                           controller: qtyController,
                           hintText: 'Qty',
-                          onChanged: onQtyChanged,
+                          enabled: false,
+                          onChanged: (String value) {},
                         ),
                       ),
                       const SizedBox(width: 8),

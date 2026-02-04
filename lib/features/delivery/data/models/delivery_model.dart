@@ -34,18 +34,18 @@ class DeliveryModel {
   factory DeliveryModel.fromJson(Map<String, dynamic> json) {
     return DeliveryModel(
       id: json['id'],
-      code: json['codePko'] ?? '-',
+      code: json['codeDo'] ?? '-',
       status: json['status'] ?? '-',
-      hub: json['hubOption'] ?? '-',
+      hub: json['hubOriginOption'] ?? '-',
+      vendor: json['areaOption'] ?? '-',
+      address: json['deliveryAddress'] ?? '-',
+      addressName: json['deliveryAddressName'] ?? '-',
       ownerSign: json['ownerSign'] ?? '-',
       receiverSign: json['receiverSign'] ?? '-',
       proof: json['proof'] ?? '-',
-      deliveryDate: DateTime.parse(json['deliveryDate']),
-      vendor: json['businessPartnerOption'] ?? '-',
-      address: json['deliveryAddressOption'] ?? '-',
-      addressName: json['deliveryAddressName'] ?? '-',
+      deliveryDate: DateTime.parse(json['deliveryOrderDate']),
       businessPartnerId: json['businessPartnerId'] ?? 0,
-      items: (json['items'] as List)
+      items: (json['items'] as List<dynamic>? ?? [])
           .map((e) => ItemModel.fromJson(e))
           .toList(),
     );

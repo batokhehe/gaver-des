@@ -127,8 +127,8 @@ class _DeliveryCameraCapturePageState extends State<DeliveryCameraCapturePage> {
       if (!mounted) return;
 
       final result = await context.push<String>(
-        '/receipt-preview',
-        extra: {"path": picture.path, "pickupId": widget.deliveryId},
+        '/receipt-preview-delivery',
+        extra: {"path": picture.path, "deliveryId": widget.deliveryId},
       );
 
       if (result != null && mounted) {

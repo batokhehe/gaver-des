@@ -7,6 +7,7 @@ class AlphanumericTextField extends StatelessWidget {
   final String hintText;
   final ValueChanged<String> onChanged;
   final int? maxDecimal;
+  final bool enabled;
 
   const AlphanumericTextField({
     super.key,
@@ -14,13 +15,15 @@ class AlphanumericTextField extends StatelessWidget {
     required this.hintText,
     required this.onChanged,
     this.maxDecimal,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      onChanged: onChanged,
+      onChanged: enabled ? onChanged : null,
+      enabled: enabled,
       decoration: InputDecoration(
         hintText: hintText,
         border: InputBorder.none,

@@ -1,19 +1,19 @@
 class ItemEntity {
   final int id;
-  String name;
+  String? name;
   int qty;
   double weight;
   final double actualWeight;
-  final String uom;
-  final String productOption;
+  final String? uom;
+  final String? productOption;
 
   ItemEntity({
     required this.id,
-    required this.name,
+    this.name,
     required this.qty,
     required this.weight,
     required this.actualWeight,
-    required this.uom,
-    required this.productOption,
+    this.uom,
+    this.productOption,
   });
 }

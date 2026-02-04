@@ -79,6 +79,17 @@ class GetTasksUseCase {
     );
   }
 
+  Future<BaseResponse<List<TaskModel>>> getActiveDelivery({
+    required int driverId,
+    required String search,
+  }) {
+    return repository.getDeliveryTasks(
+      driverId: driverId,
+      status: 'on_progress',
+      search: search,
+    );
+  }
+
   Future<BaseResponse<List<TaskModel>>> getAllPickup({
     required String search,
     required String sortCol,

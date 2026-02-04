@@ -29,7 +29,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     await ref.read(userRepositoryProvider).fetchUserFromApi();
     ref.invalidate(userProvider);
     ref.invalidate(taskAllResponseProvider);
-    ref.invalidate(taskDashboardResponseProvider);
+    ref.invalidate(pickUpDashboardResponseProvider);
+    ref.invalidate(deliveryDashboardResponseProvider);
     ref.invalidate(taskDashboardSummaryProvider);
   }
 
@@ -51,7 +52,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final statusType = parseDriverStatus(user?.status);
     final driverStatus = mapDriverStatus(statusType);
 
-    final dashboardAsync = ref.watch(taskDashboardResponseProvider);
+    final pickUpDashboardAsync = ref.watch(pickUpDashboardResponseProvider);
+    final deliveryDashboardAsync = ref.watch(deliveryDashboardResponseProvider);
     final summary = ref.watch(taskDashboardSummaryProvider);
 
     return Scaffold(
@@ -105,7 +107,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     sectionTitle("Pekerjaan Aktif"),
-                    dashboardAsync.when(
+                    pickUpDashboardAsync.when(
                       loading: () => const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 20),
                         child: SizedBox(height: 120),
@@ -136,10 +138,35 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     ),
 
                     const SizedBox(height: 16),
-                    JobEmptyCard(
-                      type: 'Delivery',
-                      onTap: () {
-                        ref.read(tabIndexProvider.notifier).state = 1;
+                    deliveryDashboardAsync.when(
+                      loading: () => const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: SizedBox(height: 120),
+                      ),
+                      error: (_, __) => JobEmptyCard(
+                        type: 'Delivery',
+                        onTap: () {
+                          ref.read(tabIndexProvider.notifier).state = 1;
+                        },
+                      ),
+                      data: (tasks) {
+                        if (tasks.totalData == 0) {
+                          return JobEmptyCard(
+                            type: 'Delivery',
+                            onTap: () {
+                              ref.read(tabIndexProvider.notifier).state = 1;
+                            },
+                          );
+                        }
+                        return JobActiveCard(
+                          job: tasks.data.first,
+                          type: 'Delivery',
+                          onOpenTask: () {
+                            context.push(
+                              '/delivery-form/${tasks.data.first.id}',
+                            );
+                          },
+                        );
                       },
                     ),
                     const SizedBox(height: 16),

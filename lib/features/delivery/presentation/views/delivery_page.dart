@@ -140,7 +140,7 @@ class _DeliveryPageState extends ConsumerState<DeliveryPage> {
               const SizedBox(height: 8),
               _buildItemList(detail.items),
 
-              const SizedBox(height: 80), // 🔥 spacer biar aman
+              const SizedBox(height: 80),
             ],
           ),
         ),
@@ -183,7 +183,7 @@ class _DeliveryPageState extends ConsumerState<DeliveryPage> {
       addressName: detail.addressName,
       isShowBottomNext: false,
       isHistory: false,
-      isPickUp: true,
+      isPickUp: false,
     );
   }
 
@@ -201,9 +201,9 @@ class _DeliveryPageState extends ConsumerState<DeliveryPage> {
         final item = items[index];
 
         return ItemCard(
-          code: item.productOption,
-          name: item.name,
-          status: "Pick up",
+          code: item.productOption.toString(),
+          name: item.name.toString(),
+          status: "Delivery",
           statusColor: Colors.orange,
           total: "${item.qty} Qty",
           weight: "${item.weight * item.qty} ${item.uom}",
@@ -232,7 +232,7 @@ class _DeliveryPageState extends ConsumerState<DeliveryPage> {
                   .read(deliveryActionControllerProvider.notifier)
                   .startDelivery(widget.id);
 
-              ref.refresh(taskDashboardResponseProvider.future);
+              ref.refresh(pickUpDashboardResponseProvider.future);
               ref.read(tabIndexProvider.notifier).state = 0;
               context.go('/home');
             } catch (e) {
