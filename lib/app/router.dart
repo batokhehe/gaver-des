@@ -10,7 +10,6 @@ import 'package:gaver_des/features/pick_up/presentation/views/pick_up_page.dart'
 import 'package:go_router/go_router.dart';
 
 import '../features/auth/presentation/views/login_page.dart';
-import '../features/auth/providers/auth_provider.dart';
 import '../features/delivery/presentation/views/camera_capture_page.dart';
 import '../features/delivery/presentation/views/delivery_form_page.dart';
 import '../features/delivery/presentation/views/receipt_preview_page.dart';

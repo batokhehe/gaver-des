@@ -1,9 +1,9 @@
-import 'package:gaver_des/features/delivery/domain/entities/delivery_entity.dart';
+import 'package:gaver_des/features/delivery/data/delivery_repository_impl.dart';
 
-import '../repository/delivery_repository.dart';
+import '../entities/delivery_entity.dart';
 
 class GetDeliveryDetailUseCase {
-  final DeliveryRepository repository;
+  final DeliveryRepositoryImpl repository;
 
   GetDeliveryDetailUseCase(this.repository);
 

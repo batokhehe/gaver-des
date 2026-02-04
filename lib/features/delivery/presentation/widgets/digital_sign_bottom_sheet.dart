@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
-import 'package:gaver_des/features/delivery/presentation/widgets/sign_header_card.dart';
+import 'package:gaver_des/features/pick_up/presentation/widgets/sign_header_card.dart';
 import 'package:signature/signature.dart';
 
 import '../../../../core/theme/app_typography.dart';

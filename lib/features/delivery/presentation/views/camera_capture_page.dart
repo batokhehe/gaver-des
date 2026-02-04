@@ -8,7 +8,8 @@ class DeliveryCameraCapturePage extends StatefulWidget {
   const DeliveryCameraCapturePage({super.key, required this.deliveryId});
 
   @override
-  State<DeliveryCameraCapturePage> createState() => _DeliveryCameraCapturePageState();
+  State<DeliveryCameraCapturePage> createState() =>
+      _DeliveryCameraCapturePageState();
 }
 
 class _DeliveryCameraCapturePageState extends State<DeliveryCameraCapturePage> {
@@ -126,8 +127,8 @@ class _DeliveryCameraCapturePageState extends State<DeliveryCameraCapturePage> {
       if (!mounted) return;
 
       final result = await context.push<String>(
-        '/receipt-preview-delivery',
-        extra: {"path": picture.path, "deliveryId": widget.deliveryId},
+        '/receipt-preview',
+        extra: {"path": picture.path, "pickupId": widget.deliveryId},
       );
 
       if (result != null && mounted) {

@@ -1,23 +1,32 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gaver_des/features/delivery/domain/entities/delivery_entity.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/data/model/business_partner_product_model.dart';
 import '../../../../core/helpers/permission_helper.dart';
+import '../../../../core/provider/business_partner_product_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/formatter.dart';
 import '../../../task/presentation/widgets/task_card.dart';
+import '../../data/delivery_status.dart';
+import '../../domain/entities/delivery_entity.dart';
 import '../../domain/entities/item_entity.dart';
 import '../../providers/delivery_items_provider.dart';
+import '../widgets/add_item_bottom_sheet.dart';
 import '../widgets/delete_bottom_sheet.dart';
 import '../widgets/digital_sign_bottom_sheet.dart';
 import '../widgets/finish_confirmation_bottom_sheet.dart';
 import '../widgets/item_card_with_checkbox.dart';
 import '../widgets/receipt_preview_bottom_sheet.dart';
 import '../widgets/signature_preview_bottom_sheet.dart';
+import '../widgets/update_status_bottom_sheet.dart';
+import '../widgets/update_status_confirmation_bottom_sheet.dart';
 
 class DeliveryFormPage extends ConsumerStatefulWidget {
   final int id;
@@ -37,8 +46,21 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
   final Map<int, TextEditingController> _weightControllers = {};
   final Map<int, TextEditingController> _nameControllers = {};
 
+  List<String> attachmentPaths = [];
+  String? proofImageUrl;
   String? handedBySignatureBase64;
   String? receivedBySignatureBase64;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _resetLocalState();
+
+      ref.invalidate(deliveryProvider(widget.id));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +73,13 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
         error: (e, _) => Center(child: Text(e.toString())),
         data: (detail) {
           _localItems ??= List.from(detail.items);
+
+          // if (attachmentPaths.isEmpty && detail.attachments != null) {
+          //   attachmentPaths = detail.attachments!
+          //       .where((e) => e.type == 'attachment')
+          //       .map((e) => e.file)
+          //       .toList();
+          // }
 
           return Column(
             children: [
@@ -104,6 +133,9 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
   }
 
   Widget _buildContent(DeliveryEntity detail) {
+    final productsAsync = ref.watch(
+      businessPartnerProductsProvider(detail.businessPartnerId),
+    );
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -119,7 +151,54 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionTitle("Informasi Pengiriman"),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _sectionTitle("Informasi Pengiriman"),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final status = await UpdateStatusBottomSheet.show(
+                        context,
+                      );
+
+                      if (status == null) return;
+
+                      final confirm = await showModalBottomSheet<bool>(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (_) => UpdateStatusConfirmationBottomSheet(
+                          deliveryId: widget.id,
+                          status: status.apiValue,
+                        ),
+                      );
+                    },
+
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.info_outline, color: Colors.white, size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          "Ubah Status",
+                          style: AppTypography.xSmallNormalWhite,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               _buildDeliveryHeader(detail),
 
@@ -129,55 +208,65 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _sectionTitle("Daftar Barang"),
-                  // ElevatedButton(
-                  //   onPressed: () async {
-                  //     final result = await AddItemBottomSheet.show(context);
-                  //
-                  //     if (result != null) {
-                  //       setState(() {
-                  //         final qtyValue =
-                  //             double.tryParse(result["total"].toString()) ?? 0;
-                  //
-                  //         final weightValue =
-                  //             double.tryParse(result["weight"].toString()) ?? 0;
-                  //
-                  //         final newItem = ItemEntity(
-                  //           id: DateTime.now().millisecondsSinceEpoch,
-                  //           name: result["name"],
-                  //           qty: qtyValue.toInt(),
-                  //           uom: '',
-                  //           weight: weightValue,
-                  //           actualWeight: weightValue,
-                  //           productOption: result["name"],
-                  //         );
-                  //
-                  //         _localItems!.add(newItem);
-                  //         checkedItems[newItem.id] = false;
-                  //       });
-                  //     }
-                  //   },
-                  //   style: ElevatedButton.styleFrom(
-                  //     elevation: 0,
-                  //     backgroundColor: AppColors.primaryShade,
-                  //     padding: const EdgeInsets.all(8),
-                  //     shape: RoundedRectangleBorder(
-                  //       borderRadius: BorderRadius.circular(12),
-                  //     ),
-                  //   ),
-                  //   child: const Text(
-                  //     "+ Tambah Barang",
-                  //     style: AppTypography.xSmallNormalPrimary,
-                  //   ),
-                  // ),
+                  productsAsync.when(
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                    data: (products) => ElevatedButton(
+                      onPressed: () async {
+                        final result = await AddItemBottomSheet.show(
+                          context,
+                          products: products, // 🔥 SEKARANG ADA
+                        );
+
+                        if (result != null) {
+                          final product =
+                              result["product"] as BusinessPartnerProduct;
+                          final qty = int.tryParse(result["qty"]) ?? 0;
+
+                          final newItem = ItemEntity(
+                            id: DateTime.now().millisecondsSinceEpoch,
+                            name: product.name,
+                            qty: qty,
+                            uom: '',
+                            weight: product.kgPerCarton,
+                            actualWeight: qty * product.kgPerCarton,
+                            productOption: product.name,
+                          );
+
+                          setState(() {
+                            _localItems!.add(newItem);
+                            checkedItems[newItem.id] = false;
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: AppColors.primaryShade,
+                        padding: const EdgeInsets.all(8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "+ Tambah Barang",
+                        style: AppTypography.xSmallNormalPrimary,
+                      ),
+                    ),
+                  ),
                 ],
               ),
+
               const SizedBox(height: 8),
-              _buildItemList(),
+              productsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text(e.toString()),
+                data: (products) => _buildItemList(products),
+              ),
 
               const SizedBox(height: 12),
-              _sectionTitle("Form Serah Terima (Opsional)"),
+              _sectionTitle("Lampiran (Opsional)"),
               const SizedBox(height: 12),
-              _buildHandoverForm(detail),
+              _buildAttachmentGrid(),
 
               const SizedBox(height: 12),
               _sectionTitle("Bukti Pengiriman"),
@@ -215,11 +304,11 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
       address: detail.address,
       isShowBottomNext: false,
       isHistory: false,
-      isPickUp: false,
+      isPickUp: true,
     );
   }
 
-  Widget _buildItemList() {
+  Widget _buildItemList(List<BusinessPartnerProduct> products) {
     return Column(
       children: List.generate(_localItems!.length, (i) {
         final item = _localItems![i];
@@ -232,7 +321,9 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
 
         _weightControllers.putIfAbsent(
           item.id,
-          () => TextEditingController(text: item.weight.toString()),
+          () => TextEditingController(
+            text: (item.qty * item.weight).toStringAsFixed(2),
+          ),
         );
 
         _nameControllers.putIfAbsent(
@@ -241,32 +332,36 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
         );
 
         return ItemCardWithCheckbox(
+          products: products,
+          nameController: _nameControllers[item.id]!,
           qtyController: _qtyControllers[item.id]!,
           weightController: _weightControllers[item.id]!,
-          nameController: _nameControllers[item.id]!,
           checked: checked,
-          onQtyChanged: (v) {
-            item.qty = int.tryParse(v) ?? 0;
-          },
-          onWeightChanged: (v) {
-            item.weight = double.tryParse(v) ?? 0;
-          },
-          onChecked: (value) {
-            setState(() => checkedItems[item.id] = value);
-          },
-          onNameChanged: (value) {
-            item.name = value;
-          },
+          onChecked: (v) => setState(() => checkedItems[item.id] = v),
           onDelete: () async {
             final confirm = await _showDeleteConfirmation(context);
             if (confirm == true) {
               setState(() {
                 _localItems!.removeAt(i);
                 checkedItems.remove(item.id);
-                _qtyControllers.remove(item.id)?.dispose();
-                _weightControllers.remove(item.id)?.dispose();
               });
             }
+          },
+          onProductSelected: (product) {
+            item.name = product.name;
+            item.weight = product.kgPerCarton;
+
+            final qty = int.tryParse(_qtyControllers[item.id]!.text) ?? 0;
+            final totalWeight = qty * product.kgPerCarton;
+
+            _weightControllers[item.id]!.text = totalWeight.toStringAsFixed(2);
+          },
+          onQtyChanged: (v) {
+            final qty = int.tryParse(v) ?? 0;
+            item.qty = qty;
+
+            final totalWeight = qty * item.weight;
+            _weightControllers[item.id]!.text = totalWeight.toStringAsFixed(2);
           },
         );
       }),
@@ -401,61 +496,25 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
   }
 
   Widget _buildReceiptForm() {
-    if (receiptImagePath != null) {
-      final fileName = receiptImagePath!.split('/').last;
+    if (proofImageUrl != null) {
+      final fileName = proofImageUrl!.split('/').last;
 
-      return InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () async {
-          final action = await showModalBottomSheet<String>(
-            context: context,
-            backgroundColor: Colors.transparent,
-            isScrollControlled: true,
-            builder: (_) =>
-                ReceiptPreviewBottomSheet(imagePath: receiptImagePath!),
-          );
-
-          if (action == 'retake') {
-            if (await PermissionHelper.camera()) {
-              final imagePath = await context.push<String>(
-                '/camera-delivery',
-                extra: {"DeliveryId": widget.id},
-              );
-              if (imagePath != null) {
-                setState(() => receiptImagePath = imagePath);
-              }
-            }
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-          ),
-          child: Column(
-            children: [
-              Image.asset(width: 40, "assets/icons/ic_clipboard_tick.png"),
-              const SizedBox(height: 8),
-              Text(
-                fileName,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              _orangeButton("Unggah Bukti", () async {
-                if (await PermissionHelper.camera()) {
-                  final imagePath = await context.push<String>(
-                    '/camera-delivery',
-                    extra: {"deliveryId": widget.id},
-                  );
-                  if (imagePath != null) {
-                    setState(() => receiptImagePath = imagePath);
-                  }
-                }
-              }),
-            ],
-          ),
+      return Container(
+        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Image.network(proofImageUrl!, height: 120, fit: BoxFit.cover),
+            const SizedBox(height: 8),
+            Text(fileName, style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            _orangeButton("Ganti Bukti", () => _pickAndUploadProof()),
+          ],
         ),
       );
     }
@@ -474,23 +533,15 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
           const SizedBox(height: 6),
           const Text("Belum Ada Bukti Pengiriman"),
           const SizedBox(height: 10),
-          _orangeButton("Unggah Bukti", () async {
-            if (await PermissionHelper.camera()) {
-              final imagePath = await context.push<String>(
-                '/camera-delivery',
-                extra: {"deliveryId": widget.id},
-              );
-              if (imagePath != null) {
-                setState(() => receiptImagePath = imagePath);
-              }
-            }
-          }),
+          _orangeButton("Unggah Bukti", () => _pickAndUploadProof()),
         ],
       ),
     );
   }
 
   Widget _buildBottomButton() {
+    final isEnabled = _allItemsChecked();
+
     return Container(
       padding: const EdgeInsets.all(16),
       color: Colors.white,
@@ -499,16 +550,19 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
         height: 50,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryDark,
+            backgroundColor: isEnabled
+                ? AppColors.primaryDark
+                : Colors.grey.shade400,
+
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          onPressed: () {
-            _showFinishConfirmation(context);
-          },
+          onPressed: isEnabled
+              ? () => _showFinishConfirmation(context)
+              : null, // 🔥 NULL = DISABLED
           child: const Text(
-            "Selesaikan Tugas",
+            "Selesaikan Delivery",
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,
@@ -556,6 +610,7 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
 
     if (result == true && context.mounted) {
       if (result == true && context.mounted) {
+        ref.invalidate(deliveryProvider(widget.id));
         context.go('/home?finished=true');
       }
     }
@@ -564,7 +619,7 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
   void _showSignaturePreview(
     name,
     title,
-    DeliveryId,
+    deliveryId,
     type,
     String base64,
     ValueChanged<String> onResign,
@@ -587,7 +642,7 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
         builder: (_) => DigitalSignBottomSheet(
           name: name,
           title: title,
-          deliveryId: DeliveryId,
+          deliveryId: deliveryId,
           type: type,
         ),
       );
@@ -595,6 +650,226 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
       if (result != null) {
         onResign(base64Encode(result));
       }
+    }
+  }
+
+  void _resetLocalState() {
+    _localItems = null;
+    checkedItems.clear();
+
+    for (final c in _qtyControllers.values) {
+      c.dispose();
+    }
+    for (final c in _weightControllers.values) {
+      c.dispose();
+    }
+    for (final c in _nameControllers.values) {
+      c.dispose();
+    }
+
+    _qtyControllers.clear();
+    _weightControllers.clear();
+    _nameControllers.clear();
+
+    receiptImagePath = null;
+    handedBySignatureBase64 = null;
+    receivedBySignatureBase64 = null;
+  }
+
+  bool _allItemsChecked() {
+    if (_localItems == null || _localItems!.isEmpty) return false;
+
+    return _localItems!.every((item) => checkedItems[item.id] == true);
+  }
+
+  Widget _buildAttachmentGrid() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: attachmentPaths.length + 1,
+        // + tombol tambah
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+        ),
+        itemBuilder: (context, index) {
+          if (index == attachmentPaths.length) {
+            return _addAttachmentButton();
+          }
+
+          final path = attachmentPaths[index];
+          return _attachmentItem(path, index);
+        },
+      ),
+    );
+  }
+
+  Widget _addAttachmentButton() {
+    return InkWell(
+      onTap: () async {
+        // 1️⃣ pilih sumber
+        final source = await showModalBottomSheet<ImageSource>(
+          context: context,
+          builder: (_) => SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Kamera'),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo),
+                  title: const Text('Galeri'),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        );
+
+        if (source == null) return;
+
+        // 2️⃣ permission kamera
+        if (source == ImageSource.camera && !await PermissionHelper.camera()) {
+          return;
+        }
+
+        // 3️⃣ ambil gambar
+        final imagePath = source == ImageSource.camera
+            ? await context.push<String>(
+                '/camera',
+                extra: {"deliveryId": widget.id},
+              )
+            : await pickImage(source: ImageSource.gallery);
+
+        if (imagePath == null) return;
+
+        try {
+          // 4️⃣ upload multipart
+          final fileUrl = await ref
+              .read(deliveryApiProvider)
+              .uploadFile(File(imagePath));
+
+          // 5️⃣ submit link
+          final delivery = await ref.read(deliveryProvider(widget.id).future);
+
+          final proof = await ref
+              .read(deliveryApiProvider)
+              .submitDeliveryProof(
+                deliveryOrderId: delivery.id,
+                fileUrl: fileUrl,
+                type: 'attachment',
+              );
+
+          setState(() => attachmentPaths.add(proof.file));
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Gagal upload lampiran'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.greyBg,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.black12),
+        ),
+        child: const Center(
+          child: Icon(Icons.add, size: 32, color: Colors.grey),
+        ),
+      ),
+    );
+  }
+
+  Widget _attachmentItem(String path, int index) {
+    return Stack(
+      children: [
+        InkWell(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              backgroundColor: Colors.transparent,
+              isScrollControlled: true,
+              builder: (_) => ReceiptPreviewBottomSheet(imagePath: path),
+            );
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              path,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+            ),
+          ),
+        ),
+
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () {
+              setState(() => attachmentPaths.removeAt(index));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.close, size: 14, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickAndUploadProof() async {
+    if (!await PermissionHelper.camera()) return;
+
+    final imagePath = await context.push<String>(
+      '/camera',
+      extra: {"deliveryId": widget.id},
+    );
+
+    if (imagePath == null) return;
+
+    try {
+      // 1️⃣ upload file
+      final fileUrl = await ref
+          .read(deliveryApiProvider)
+          .uploadFile(File(imagePath));
+
+      // 2️⃣ submit proof
+      final proof = await ref
+          .read(deliveryApiProvider)
+          .submitDeliveryProof(
+            deliveryOrderId: widget.id,
+            fileUrl: fileUrl,
+            type: 'proof', // 🔥 INI BEDANYA
+          );
+
+      setState(() => proofImageUrl = proof.file);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal upload bukti pengiriman'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

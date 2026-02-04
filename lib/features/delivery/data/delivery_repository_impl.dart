@@ -1,8 +1,8 @@
-import 'package:gaver_des/features/delivery/data/delivery_api.dart';
 import 'package:gaver_des/features/delivery/data/delivery_mapper.dart';
 
 import '../domain/entities/delivery_entity.dart';
 import '../domain/repository/delivery_repository.dart';
+import 'delivery_api.dart';
 
 class DeliveryRepositoryImpl implements DeliveryRepository {
   final DeliveryApi api;
@@ -18,5 +18,19 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
   @override
   Future<void> updateStatusDelivery(int id, String status) async {
     await api.updateStatus(id, status);
+  }
+
+  @override
+  Future<String?> getDeliverySign({
+    required int deliveryOrderId,
+    required String type,
+  }) async {
+    final apiValue = type == 'proof' ? 'proofs' : 'signs';
+
+    return api.fetchDeliverySign(
+      deliveryOrderId: deliveryOrderId,
+      type: type,
+      apiValue: apiValue,
+    );
   }
 }

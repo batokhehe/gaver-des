@@ -1,32 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
-import 'package:gaver_des/core/widgets/alphanumeric_text_field.dart';
-
+import '../../../../core/data/model/business_partner_product_model.dart';
 import '../../../../core/widgets/decimal_text_field.dart';
 
 class ItemCardWithCheckbox extends StatelessWidget {
+  final List<BusinessPartnerProduct> products;
+
   final TextEditingController nameController;
   final TextEditingController qtyController;
   final TextEditingController weightController;
+
   final bool checked;
   final VoidCallback onDelete;
   final ValueChanged<bool> onChecked;
-  final ValueChanged<String> onNameChanged;
+  final ValueChanged<BusinessPartnerProduct> onProductSelected;
   final ValueChanged<String> onQtyChanged;
-  final ValueChanged<String> onWeightChanged;
 
   const ItemCardWithCheckbox({
     super.key,
+    required this.products,
     required this.nameController,
     required this.qtyController,
     required this.weightController,
     required this.checked,
     required this.onDelete,
     required this.onChecked,
-    required this.onNameChanged,
+    required this.onProductSelected,
     required this.onQtyChanged,
-    required this.onWeightChanged,
   });
 
   @override
@@ -42,32 +43,62 @@ class ItemCardWithCheckbox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// ---------- NAME (DROPDOWN) ----------
           Row(
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.black12),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: AlphanumericTextField(
-                          controller: nameController,
-                          hintText: 'Name',
-                          onChanged: onNameChanged,
-                        ),
+                  child: DropdownButtonFormField<BusinessPartnerProduct>(
+                    isExpanded: true,
+
+                    value: products.any((e) => e.name == nameController.text)
+                        ? products.firstWhere(
+                            (e) => e.name == nameController.text,
+                          )
+                        : null,
+
+                    hint: const Text(
+                      'Pilih Produk',
+                      style: AppTypography.xSmallNormalBlack,
+                    ),
+                    icon: const Icon(Icons.keyboard_arrow_down),
+
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 14, // 🔥 INI YANG NGARUH KE HEIGHT
                       ),
-                    ],
+                    ),
+
+                    items: products.map((product) {
+                      return DropdownMenuItem<BusinessPartnerProduct>(
+                        value: product,
+                        child: Text(
+                          product.name,
+                          style: AppTypography.xSmallNormalBlack,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+
+                    onChanged: (product) {
+                      if (product == null) return;
+
+                      nameController.text = product.name;
+                      onProductSelected(product);
+                    },
                   ),
                 ),
               ),
-              SizedBox(width: 16),
+
+              const SizedBox(width: 16),
+
               GestureDetector(
                 onTap: () => onChecked(!checked),
                 child: Container(
@@ -88,7 +119,7 @@ class ItemCardWithCheckbox extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // ROW BOTTOM INPUTS
+          /// ---------- QTY & WEIGHT ----------
           Row(
             children: [
               Expanded(
@@ -110,7 +141,7 @@ class ItemCardWithCheckbox extends StatelessWidget {
                           onChanged: onQtyChanged,
                         ),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       const Text("Qty", style: AppTypography.xSmallNormalBlack),
                     ],
                   ),
@@ -119,7 +150,6 @@ class ItemCardWithCheckbox extends StatelessWidget {
 
               const SizedBox(width: 12),
 
-              // Berat
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -127,6 +157,7 @@ class ItemCardWithCheckbox extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
+                    color: AppColors.greyBg,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.black12),
                   ),
@@ -136,10 +167,11 @@ class ItemCardWithCheckbox extends StatelessWidget {
                         child: DecimalTextField(
                           controller: weightController,
                           hintText: 'Weight',
-                          onChanged: onWeightChanged,
+                          enabled: false,
+                          onChanged: (String value) {},
                         ),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       const Text("Kg", style: AppTypography.xSmallNormalBlack),
                     ],
                   ),
@@ -148,7 +180,6 @@ class ItemCardWithCheckbox extends StatelessWidget {
 
               const SizedBox(width: 20),
 
-              // Delete icon
               GestureDetector(
                 onTap: onDelete,
                 child: Image.asset(
@@ -157,7 +188,6 @@ class ItemCardWithCheckbox extends StatelessWidget {
                   height: 20,
                 ),
               ),
-              const SizedBox(width: 4),
             ],
           ),
         ],

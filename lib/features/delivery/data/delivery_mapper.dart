@@ -1,7 +1,6 @@
-import 'package:gaver_des/features/delivery/data/models/delivery_model.dart';
-import 'package:gaver_des/features/delivery/domain/entities/delivery_entity.dart';
-
+import '../domain/entities/delivery_entity.dart';
 import '../domain/entities/item_entity.dart';
+import 'models/delivery_model.dart';
 
 extension DeliveryMapper on DeliveryModel {
   DeliveryEntity toEntity() {
@@ -16,6 +15,7 @@ extension DeliveryMapper on DeliveryModel {
       ownerSign: ownerSign,
       receiverSign: receiverSign,
       proof: proof,
+      businessPartnerId: businessPartnerId,
       items: items
           .map(
             (e) => ItemEntity(

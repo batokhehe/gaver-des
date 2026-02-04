@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -91,14 +90,20 @@ class DeliveryReceiptPreviewPage extends ConsumerWidget {
         child: GestureDetector(
           onTap: () async {
             try {
-              final bytes = await File(imagePath).readAsBytes();
-              final base64Image = base64Encode(bytes);
+              final file = File(imagePath);
 
+              // 1️⃣ upload file
+              final imageUrl = await ref
+                  .read(deliveryApiProvider)
+                  .uploadFile(file);
+
+              // 2️⃣ submit link
               await ref
                   .read(deliveryApiProvider)
-                  .uploadProof(
+                  .submitDeliveryProof(
                     deliveryOrderId: deliveryId,
-                    base64File: base64Image,
+                    fileUrl: imageUrl,
+                    type: 'attachment', // atau 'proof'
                   );
 
               context.pop(imagePath);

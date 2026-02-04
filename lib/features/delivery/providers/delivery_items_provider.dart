@@ -3,7 +3,9 @@ import 'package:gaver_des/core/network/dio_client.dart';
 
 import '../data/delivery_api.dart';
 import '../data/delivery_repository_impl.dart';
+import '../data/models/delivery_sign_param.dart';
 import '../domain/entities/delivery_entity.dart';
+import '../domain/repository/delivery_repository.dart';
 import '../domain/usecase/get_delivery_items_usecase.dart';
 
 final deliveryApiProvider = Provider(
@@ -47,16 +49,29 @@ class DeliveryActionController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  Future<void> finishDelivery(int id) async {
+  Future<void> updateStatusDelivery(int id, String status) async {
     state = const AsyncLoading();
     try {
-      await ref
-          .read(deliveryRepositoryProvider)
-          .api
-          .updateStatus(id, 'finished');
+      await ref.read(deliveryRepositoryProvider).api.updateStatus(id, status);
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);
     }
   }
 }
+
+final deliverySignRepositoryProvider = Provider<DeliveryRepository>(
+  (ref) => DeliveryRepositoryImpl(ref.read(deliveryApiProvider)),
+);
+
+final deliverySignProvider = FutureProvider.family<String?, DeliverySignParam>((
+  ref,
+  param,
+) async {
+  return ref
+      .read(deliverySignRepositoryProvider)
+      .getDeliverySign(
+        deliveryOrderId: param.deliveryOrderId,
+        type: param.type,
+      );
+});

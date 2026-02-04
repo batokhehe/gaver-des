@@ -12,6 +12,7 @@ class DeliveryEntity {
   final String receiverSign;
   final String proof;
   final List<ItemEntity> items;
+  final int businessPartnerId;
 
   const DeliveryEntity({
     required this.id,
@@ -25,5 +26,6 @@ class DeliveryEntity {
     required this.ownerSign,
     required this.receiverSign,
     required this.proof,
+    required this.businessPartnerId,
   });
 }
