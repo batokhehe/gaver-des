@@ -25,7 +25,7 @@ class ReceiptPreviewBottomSheet extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "Bukti Pengiriman",
+                "Bukti Pengambilan",
                 style: AppTypography.largeBoldBlack,
               ),
               GestureDetector(

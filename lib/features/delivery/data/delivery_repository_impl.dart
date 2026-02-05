@@ -1,5 +1,6 @@
 import 'package:gaver_des/features/delivery/data/delivery_mapper.dart';
 
+import '../../../core/data/proof_attachment_entity.dart';
 import '../domain/entities/delivery_entity.dart';
 import '../domain/repository/delivery_repository.dart';
 import 'delivery_api.dart';
@@ -32,5 +33,16 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
       type: type,
       apiValue: apiValue,
     );
+  }
+
+  @override
+  Future<List<ProofAttachmentEntity>> getDeliveryProofs(
+    int deliveryOrderId,
+  ) async {
+    final models = await api.fetchDeliveryProofs(deliveryOrderId);
+
+    return models
+        .map((m) => ProofAttachmentEntity(id: m.id, type: m.type, file: m.file))
+        .toList();
   }
 }

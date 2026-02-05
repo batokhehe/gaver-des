@@ -269,7 +269,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
               _buildAttachmentGrid(),
 
               const SizedBox(height: 12),
-              _sectionTitle("Bukti Pengiriman"),
+              _sectionTitle("Bukti Pengambilan"),
               const SizedBox(height: 12),
               _buildReceiptForm(),
 
@@ -532,7 +532,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
         children: [
           const Icon(Icons.image, size: 40, color: Colors.grey),
           const SizedBox(height: 6),
-          const Text("Belum Ada Bukti Pengiriman"),
+          const Text("Belum Ada Bukti Pengambilan"),
           const SizedBox(height: 10),
           _orangeButton("Unggah Bukti", () => _pickAndUploadProof()),
         ],
@@ -867,7 +867,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Gagal upload bukti pengiriman'),
+          content: Text('Gagal upload bukti pengambilan'),
           backgroundColor: Colors.red,
         ),
       );

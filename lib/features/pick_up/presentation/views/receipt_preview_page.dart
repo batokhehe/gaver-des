@@ -66,7 +66,7 @@ class ReceiptPreviewPage extends ConsumerWidget {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  "Bukti Pengiriman",
+                  "Bukti Pengambilan",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -111,7 +111,7 @@ class ReceiptPreviewPage extends ConsumerWidget {
             } catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text("Gagal mengunggah bukti pengiriman"),
+                  content: Text("Gagal mengunggah bukti pengambilan"),
                   backgroundColor: Colors.red,
                 ),
               );

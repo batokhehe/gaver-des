@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaver_des/core/data/proof_attachment_entity.dart';
 import 'package:gaver_des/core/network/dio_client.dart';
 import 'package:gaver_des/features/pick_up/domain/entities/pick_up_entity.dart';
 import 'package:gaver_des/features/pick_up/domain/repository/pick_up_repository.dart';
@@ -70,3 +71,12 @@ final pickupSignProvider = FutureProvider.family<String?, PickupSignParam>((
       .read(pickupSignRepositoryProvider)
       .getPickupSign(pickupOrderId: param.pickupOrderId, type: param.type);
 });
+
+final pickupProofsProvider =
+    FutureProvider.family<List<ProofAttachmentEntity>, int>((
+      ref,
+      pickupOrderId,
+    ) {
+      final repo = ref.read(pickUpRepositoryProvider);
+      return repo.getPickupProofs(pickupOrderId);
+    });

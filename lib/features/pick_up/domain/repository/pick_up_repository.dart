@@ -1,3 +1,4 @@
+import '../../../../core/data/proof_attachment_entity.dart';
 import '../entities/pick_up_entity.dart';
 
 abstract class PickUpRepository {
@@ -9,4 +10,6 @@ abstract class PickUpRepository {
     required int pickupOrderId,
     required String type,
   });
+
+  Future<List<ProofAttachmentEntity>> getPickupProofs(int pickupOrderId);
 }

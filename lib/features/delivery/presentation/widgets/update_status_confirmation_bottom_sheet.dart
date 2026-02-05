@@ -113,7 +113,7 @@ class UpdateStatusConfirmationBottomSheet extends ConsumerWidget {
                     }
 
                     // 🔁 REFRESH DASHBOARD API
-                    ref.refresh(pickUpDashboardResponseProvider.future);
+                    ref.refresh(deliveryDashboardResponseProvider.future);
 
                     // 🏠 PINDAH KE DASHBOARD
                     ref.read(tabIndexProvider.notifier).state = 0;

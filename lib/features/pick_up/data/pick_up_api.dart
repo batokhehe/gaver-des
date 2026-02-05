@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:gaver_des/core/data/proof_attachment_model.dart';
 import 'package:gaver_des/features/pick_up/data/models/pick_up_model.dart';
 
 import '../../../core/errors/app_exception.dart';
@@ -92,5 +93,17 @@ class PickUpApi {
     );
 
     return OrderProofModel.fromJson(res.data['data']);
+  }
+
+  Future<List<ProofAttachment>> fetchPickupProofs(
+    int pickupOrderId,
+  ) async {
+    final res = await dio.get(
+      '/pickup-order-proofs/pickup-order/$pickupOrderId',
+    );
+
+    final list = res.data['data'] as List;
+
+    return list.map((e) => ProofAttachment.fromJson(e)).toList();
   }
 }

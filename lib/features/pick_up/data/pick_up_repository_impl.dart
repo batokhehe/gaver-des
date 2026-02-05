@@ -1,6 +1,7 @@
 import 'package:gaver_des/features/pick_up/data/pick_up_api.dart';
 import 'package:gaver_des/features/pick_up/data/pick_up_mapper.dart';
 
+import '../../../core/data/proof_attachment_entity.dart';
 import '../domain/entities/pick_up_entity.dart';
 import '../domain/repository/pick_up_repository.dart';
 
@@ -33,5 +34,17 @@ class PickUpRepositoryImpl implements PickUpRepository {
       type: type,
       apiValue: apiValue,
     );
+  }
+
+  @override
+  Future<List<ProofAttachmentEntity>> getPickupProofs(int pickupOrderId) async {
+    final models = await api.fetchPickupProofs(pickupOrderId);
+
+    return models
+        .map(
+          (m) =>
+              ProofAttachmentEntity(id: m.id, type: m.type, file: m.file),
+        )
+        .toList();
   }
 }

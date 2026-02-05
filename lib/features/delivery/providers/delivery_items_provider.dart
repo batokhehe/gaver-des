@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/network/dio_client.dart';
 
+import '../../../core/data/proof_attachment_entity.dart';
 import '../data/delivery_api.dart';
 import '../data/delivery_repository_impl.dart';
 import '../data/models/delivery_sign_param.dart';
@@ -74,4 +75,13 @@ final deliverySignProvider = FutureProvider.family<String?, DeliverySignParam>((
         deliveryOrderId: param.deliveryOrderId,
         type: param.type,
       );
+});
+
+final deliveryProofsProvider =
+FutureProvider.family<List<ProofAttachmentEntity>, int>((
+    ref,
+    deliveryOrderId,
+    ) {
+  final repo = ref.read(deliveryRepositoryProvider);
+  return repo.getDeliveryProofs(deliveryOrderId);
 });

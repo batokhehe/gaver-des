@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
-import 'package:gaver_des/features/pick_up/presentation/widgets/item_card.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -18,6 +17,7 @@ import '../../data/models/delivery_sign_param.dart';
 import '../../domain/entities/delivery_entity.dart';
 import '../../domain/entities/item_entity.dart';
 import '../../providers/delivery_items_provider.dart';
+import '../widgets/item_card.dart';
 
 class DeliveryPage extends ConsumerStatefulWidget {
   final int id;
@@ -232,7 +232,7 @@ class _DeliveryPageState extends ConsumerState<DeliveryPage> {
                   .read(deliveryActionControllerProvider.notifier)
                   .startDelivery(widget.id);
 
-              ref.refresh(pickUpDashboardResponseProvider.future);
+              ref.refresh(deliveryDashboardResponseProvider.future);
               ref.read(tabIndexProvider.notifier).state = 0;
               context.go('/home');
             } catch (e) {
@@ -294,21 +294,9 @@ class _DeliveryPageState extends ConsumerState<DeliveryPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _signatureFromApi(
-            "Diserahkan Oleh",
-            detail.id,
-            'owner',
-            'tanda tangan',
-          ),
+          _proofFromApi("Lampiran", detail.id, 'attachment'),
           const SizedBox(height: 36),
-          _signatureFromApi(
-            "Diterima Oleh",
-            detail.id,
-            'receiver',
-            'tanda tangan',
-          ),
-          const SizedBox(height: 36),
-          _signatureFromApi("Bukti Pengiriman", detail.id, 'proof', 'gambar'),
+          _proofFromApi("Bukti Pengiriman", detail.id, 'proof'),
         ],
       ),
     );
@@ -444,6 +432,90 @@ class _DeliveryPageState extends ConsumerState<DeliveryPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _proofFromApi(String title, int deliveryOrderId, String type) {
+    final async = ref.watch(deliveryProofsProvider(deliveryOrderId));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: AppTypography.xSmallNormalBlack),
+        const SizedBox(height: 6),
+
+        async.when(
+          loading: () => const CircularProgressIndicator(strokeWidth: 2),
+          error: (_, __) => _signatureError(type, "Gagal memuat data"),
+          data: (items) {
+            final filtered = items.where((e) => e.type == type).toList();
+
+            if (filtered.isEmpty) {
+              return _signatureError(type, "Tidak ada data");
+            }
+
+            return Column(
+              children: filtered.map((e) {
+                return GestureDetector(
+                  onTap: () => _showZoomImageUrl(e.file),
+                  child: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.black12),
+                    ),
+                    child: Image.network(
+                      e.file,
+                      height: 160,
+                      fit: BoxFit.fitWidth,
+                      loadingBuilder: (_, child, progress) {
+                        if (progress == null) return child;
+                        return const SizedBox(
+                          height: 160,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) =>
+                          _signatureError(type, "Gagal memuat gambar"),
+                    ),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  void _showZoomImageUrl(String url) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.9),
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              minScale: 1,
+              maxScale: 6,
+              child: Center(child: Image.network(url)),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

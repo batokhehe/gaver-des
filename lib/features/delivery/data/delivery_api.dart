@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 
+import '../../../core/data/proof_attachment_model.dart';
 import '../../../core/errors/app_exception.dart';
 import 'models/delivery_model.dart';
 import 'models/order_proof_model.dart';
@@ -94,5 +95,15 @@ class DeliveryApi {
     );
 
     return OrderProofModel.fromJson(res.data['data']);
+  }
+
+  Future<List<ProofAttachment>> fetchDeliveryProofs(int deliveryOrderId) async {
+    final res = await dio.get(
+      '/delivery-order-proofs/delivery-order/$deliveryOrderId',
+    );
+
+    final list = res.data['data'] as List;
+
+    return list.map((e) => ProofAttachment.fromJson(e)).toList();
   }
 }

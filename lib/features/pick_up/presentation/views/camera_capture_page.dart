@@ -86,7 +86,7 @@ class _CameraCapturePageState extends State<CameraCapturePage> {
               ),
               SizedBox(width: 12),
               Text(
-                "Bukti Pengiriman",
+                "Bukti Pengambilan",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,

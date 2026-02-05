@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
-import '../../../../core/data/model/business_partner_product_model.dart';
+
 import '../../../../core/widgets/alphanumeric_text_field.dart';
 import '../../../../core/widgets/decimal_text_field.dart';
 
@@ -11,7 +11,6 @@ class ItemCardWithCheckbox extends StatelessWidget {
   final TextEditingController weightController;
 
   final bool checked;
-  final VoidCallback onDelete;
   final ValueChanged<bool> onChecked;
 
   const ItemCardWithCheckbox({
@@ -20,7 +19,6 @@ class ItemCardWithCheckbox extends StatelessWidget {
     required this.qtyController,
     required this.weightController,
     required this.checked,
-    required this.onDelete,
     required this.onChecked,
   });
 
@@ -47,6 +45,7 @@ class ItemCardWithCheckbox extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
+                    color: AppColors.greyBg,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.black12),
                   ),
@@ -97,6 +96,7 @@ class ItemCardWithCheckbox extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
+                    color: AppColors.greyBg,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.black12),
                   ),
@@ -144,17 +144,6 @@ class ItemCardWithCheckbox extends StatelessWidget {
                       const Text("Kg", style: AppTypography.xSmallNormalBlack),
                     ],
                   ),
-                ),
-              ),
-
-              const SizedBox(width: 20),
-
-              GestureDetector(
-                onTap: onDelete,
-                child: Image.asset(
-                  'assets/icons/ic_trash.png',
-                  width: 20,
-                  height: 20,
                 ),
               ),
             ],

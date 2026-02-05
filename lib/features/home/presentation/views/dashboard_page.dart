@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/navigation/tab_index_provider.dart';
 import '../../../profile/data/driver_status.dart';
+import '../../../task/providers/task_filter_provider.dart';
 import '../../../task/providers/task_viewmodel.dart';
 import '../../../user/providers/user_provider.dart';
 import '../../../user/providers/user_repository_provider.dart';
@@ -25,24 +26,36 @@ class DashboardPage extends ConsumerStatefulWidget {
 }
 
 class _DashboardPageState extends ConsumerState<DashboardPage> {
+  late final ProviderSubscription<int> _tabListener;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _tabListener = ref.listenManual<int>(tabIndexProvider, (previous, next) {
+      if (previous != next && next == 0) {
+        _refreshDashboard();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabListener.close();
+    super.dispose();
+  }
+
   Future<void> _refreshDashboard() async {
     await ref.read(userRepositoryProvider).fetchUserFromApi();
     ref.invalidate(userProvider);
     ref.invalidate(taskAllResponseProvider);
     ref.invalidate(pickUpDashboardResponseProvider);
-    ref.invalidate(deliveryDashboardResponseProvider);
+    ref.refresh(deliveryDashboardResponseProvider);
     ref.invalidate(taskDashboardSummaryProvider);
   }
 
   @override
   Widget build(BuildContext context) {
-    /// 🔥 LISTEN TAB CHANGE (HARUS DI BUILD)
-    ref.listen<int>(tabIndexProvider, (previous, next) {
-      if (previous != next && next == 0) {
-        _refreshDashboard();
-      }
-    });
-
     final bool hasActiveJob = true;
     final fullName = ref.watch(userNameProvider);
     final email = ref.watch(userEmailProvider);
@@ -115,6 +128,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       error: (_, __) => JobEmptyCard(
                         type: 'Pick Up',
                         onTap: () {
+                          ref.read(taskFilterProvider.notifier).state =
+                              TaskFilter.pickup;
                           ref.read(tabIndexProvider.notifier).state = 1;
                         },
                       ),
@@ -123,6 +138,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           return JobEmptyCard(
                             type: 'Pick Up',
                             onTap: () {
+                              ref.read(taskFilterProvider.notifier).state =
+                                  TaskFilter.pickup;
                               ref.read(tabIndexProvider.notifier).state = 1;
                             },
                           );
@@ -146,6 +163,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       error: (_, __) => JobEmptyCard(
                         type: 'Delivery',
                         onTap: () {
+                          ref.read(taskFilterProvider.notifier).state =
+                              TaskFilter.delivery;
                           ref.read(tabIndexProvider.notifier).state = 1;
                         },
                       ),
@@ -154,6 +173,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           return JobEmptyCard(
                             type: 'Delivery',
                             onTap: () {
+                              ref.read(taskFilterProvider.notifier).state =
+                                  TaskFilter.delivery;
                               ref.read(tabIndexProvider.notifier).state = 1;
                             },
                           );

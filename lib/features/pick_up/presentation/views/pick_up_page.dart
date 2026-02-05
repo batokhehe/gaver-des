@@ -294,21 +294,9 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _signatureFromApi(
-            "Diserahkan Oleh",
-            detail.id,
-            'owner',
-            'tanda tangan',
-          ),
+          _proofFromApi("Lampiran", detail.id, 'attachment'),
           const SizedBox(height: 36),
-          _signatureFromApi(
-            "Diterima Oleh",
-            detail.id,
-            'receiver',
-            'tanda tangan',
-          ),
-          const SizedBox(height: 36),
-          _signatureFromApi("Bukti Pengiriman", detail.id, 'proof', 'gambar'),
+          _proofFromApi("Bukti Pengambilan", detail.id, 'proof'),
         ],
       ),
     );
@@ -444,6 +432,90 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _proofFromApi(String title, int pickupOrderId, String type) {
+    final async = ref.watch(pickupProofsProvider(pickupOrderId));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: AppTypography.xSmallNormalBlack),
+        const SizedBox(height: 6),
+
+        async.when(
+          loading: () => const CircularProgressIndicator(strokeWidth: 2),
+          error: (_, __) => _signatureError(type, "Gagal memuat data"),
+          data: (items) {
+            final filtered = items.where((e) => e.type == type).toList();
+
+            if (filtered.isEmpty) {
+              return _signatureError(type, "Tidak ada data");
+            }
+
+            return Column(
+              children: filtered.map((e) {
+                return GestureDetector(
+                  onTap: () => _showZoomImageUrl(e.file),
+                  child: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.black12),
+                    ),
+                    child: Image.network(
+                      e.file,
+                      height: 160,
+                      fit: BoxFit.fitWidth,
+                      loadingBuilder: (_, child, progress) {
+                        if (progress == null) return child;
+                        return const SizedBox(
+                          height: 160,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) =>
+                          _signatureError(type, "Gagal memuat gambar"),
+                    ),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  void _showZoomImageUrl(String url) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.9),
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              minScale: 1,
+              maxScale: 6,
+              child: Center(child: Image.network(url)),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

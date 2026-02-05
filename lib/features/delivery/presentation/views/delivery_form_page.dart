@@ -328,15 +328,6 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
           weightController: _weightControllers[item.id]!,
           checked: checked,
           onChecked: (v) => setState(() => checkedItems[item.id] = v),
-          onDelete: () async {
-            final confirm = await _showDeleteConfirmation(context);
-            if (confirm == true) {
-              setState(() {
-                _localItems!.removeAt(i);
-                checkedItems.remove(item.id);
-              });
-            }
-          },
         );
       }),
     );
