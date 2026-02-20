@@ -18,9 +18,26 @@ class DailyRecapSection extends ConsumerWidget {
           height: 80,
           child: Center(child: CircularProgressIndicator()),
         ),
-        error: (_, __) => const SizedBox(
-          height: 80,
-          child: Center(child: Text('Gagal memuat rekap')),
+        error: (_, __) => Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                title: "Selesai",
+                count: 0,
+                color: AppColors.primary,
+                icColor: "orange",
+              ),
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: StatCard(
+                title: "Progress",
+                count: 0,
+                color: Colors.deepPurpleAccent,
+                icColor: "purple",
+              ),
+            ),
+          ],
         ),
         data: (summary) => Row(
           children: [

@@ -96,7 +96,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   isTransparent: true,
                   subHeader: summary.when(
                     loading: () => 'Memuat tugas hari ini...',
-                    error: (error, _) => 'Gagal memuat tugas: $error',
+                    error: (error, _) => 'Anda belum mendapatkan penugasan kembali untuk hari ini',
                     data: (s) => s.assigned == 0
                         ? 'Anda belum mendapatkan penugasan kembali untuk hari ini'
                         : 'Anda memiliki ${s.assigned} tugas hari ini yang belum terselesaikan',

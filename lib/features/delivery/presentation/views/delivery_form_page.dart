@@ -12,6 +12,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/formatter.dart';
 import '../../../task/presentation/widgets/task_card.dart';
+import '../../../task/providers/task_viewmodel.dart';
 import '../../data/delivery_status.dart';
 import '../../domain/entities/delivery_entity.dart';
 import '../../domain/entities/item_entity.dart';
@@ -576,6 +577,7 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
     if (result == true && context.mounted) {
       if (result == true && context.mounted) {
         ref.invalidate(deliveryProvider(widget.id));
+        ref.invalidate(deliveryDashboardResponseProvider);
         context.go('/home?finished=true');
       }
     }

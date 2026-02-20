@@ -7,13 +7,12 @@ import 'interceptors.dart';
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
+      // baseUrl: "https://api.gaver.seavihive.com/api",
       baseUrl: "http://72.61.214.163:8018/api",
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 5),
     ),
   );
-
-  dio.interceptors.add(ApiInterceptor(ref));
   dio.interceptors.add(
     LogInterceptor(
       request: true,
@@ -24,6 +23,7 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
   dio.interceptors.add(ChuckerDioInterceptor());
+  dio.interceptors.add(ApiInterceptor(ref));
 
   return dio;
 });
