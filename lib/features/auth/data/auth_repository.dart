@@ -22,9 +22,14 @@ class AuthRepository {
   static const _keyToken = "token";
 
   /// ---------------- LOGIN ----------------
-  Future<bool> login(String email, String pass) async {
+  Future<bool> login(
+    String email,
+    String pass,
+    String? fcmToken,
+    String deviceId,
+  ) async {
     try {
-      final res = await api.login(email, pass);
+      final res = await api.login(email, pass, fcmToken, deviceId);
 
       final token = res?["token"];
       final userJson = res?["data"];

@@ -13,7 +13,7 @@ class DeliveryModel {
   final String receiverSign;
   final String proof;
   final int businessPartnerId;
-  final String pickupMapsOption;
+  final String deliveryMapsOption;
   final List<ItemModel> items;
 
   DeliveryModel({
@@ -30,7 +30,7 @@ class DeliveryModel {
     required this.receiverSign,
     required this.proof,
     required this.businessPartnerId,
-    required this.pickupMapsOption,
+    required this.deliveryMapsOption,
   });
 
   factory DeliveryModel.fromJson(Map<String, dynamic> json) {
@@ -47,7 +47,7 @@ class DeliveryModel {
       proof: json['proof'] ?? '-',
       deliveryDate: DateTime.parse(json['deliveryOrderDate']),
       businessPartnerId: json['businessPartnerId'] ?? 0,
-      pickupMapsOption: json['pickupMapsOption'] ?? "",
+      deliveryMapsOption: json['deliveryMapsOption'] ?? "",
       items: (json['items'] as List<dynamic>? ?? [])
           .map((e) => ItemModel.fromJson(e))
           .toList(),

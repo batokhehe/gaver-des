@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaver_des/core/service/device_id_service.dart';
 
 import '../../../core/network/dio_client.dart';
+import '../../../core/service/push_notification_service.dart';
 import '../../user/providers/user_provider.dart';
 import '../data/auth_api.dart';
 import '../data/auth_repository.dart';
@@ -15,8 +17,20 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(ref.read(authApiProvider), ref);
 });
 
-final loginUseCaseProvider = Provider((ref) {
-  return LoginUseCase(ref.read(authRepositoryProvider));
+final pushNotificationServiceProvider = Provider<PushNotificationService>(
+  (ref) => PushNotificationService(),
+);
+
+final deviceIdServiceProvider = Provider<DeviceIdService>(
+  (ref) => DeviceIdService(),
+);
+
+final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
+  return LoginUseCase(
+    ref.read(authRepositoryProvider),
+    ref.read(pushNotificationServiceProvider),
+    ref.read(deviceIdServiceProvider),
+  );
 });
 
 final loginViewModelProvider =

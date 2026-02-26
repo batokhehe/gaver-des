@@ -1,5 +1,5 @@
 
 
 class AppString {
-  static const appVersion = "GaVer 1.0.7";
+  static const appVersion = "GaVer 1.0.8";
 }

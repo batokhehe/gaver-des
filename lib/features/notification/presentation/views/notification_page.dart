@@ -1,25 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/theme/app_colors.dart';
 import 'package:gaver_des/core/theme/app_typography.dart';
+import 'package:gaver_des/features/notification/provider/notification_viewmodel.dart';
 
+import '../../data/models/notification_model.dart';
 import '../widgets/notification_card.dart';
 
-class NotificationPage extends StatefulWidget {
+class NotificationPage extends ConsumerWidget {
   const NotificationPage({super.key});
 
   @override
-  State<NotificationPage> createState() => _NotificationPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notificationAsync = ref.watch(notificationResponseProvider);
 
-class _NotificationPageState extends State<NotificationPage> {
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.baseBackground,
       body: Column(
         children: [
           _buildHeader(),
-          Expanded(child: _buildNotificationList()),
+          Expanded(
+            child: notificationAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) =>
+                  Center(child: Text("Terjadi kesalahan: $err")),
+              data: (response) {
+                final notifications = response.data;
+                if (notifications.isEmpty) {
+                  return const Center(child: Text("Belum ada notifikasi"));
+                }
+
+                return _buildNotificationList(notifications);
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -39,7 +53,6 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
           ),
         ),
-
         Container(
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(16, 54, 16, 0),
@@ -47,7 +60,6 @@ class _NotificationPageState extends State<NotificationPage> {
             children: [
               const Icon(Icons.arrow_back, color: Colors.white),
               const SizedBox(width: 12),
-
               const Text(
                 "Notifikasi",
                 style: TextStyle(
@@ -56,7 +68,6 @@ class _NotificationPageState extends State<NotificationPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -79,7 +90,7 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
-  Widget _buildNotificationList() {
+  Widget _buildNotificationList(List<NotificationModel> notifications) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -91,39 +102,62 @@ class _NotificationPageState extends State<NotificationPage> {
             topRight: Radius.circular(16),
           ),
         ),
-        child: ListView(
+        child: ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          children: const [
-            NotificationCard(
-              icon: Icons.info,
-              iconBgColor: Color(0xFFE8F2FF),
-              iconColor: Color(0xFF007BFF),
-              title: "Pick Up Baru Diterima (PU0002)",
-              subtitle: "Anda mendapat tugas Pick Up baru dari...",
-              time: "14:32",
-              showDot: true,
-            ),
-            NotificationCard(
-              icon: Icons.check_circle,
-              iconBgColor: Color(0xFFE9FBEF),
-              iconColor: Color(0xFF2DB566),
-              title: "Pick Up Selesai (PU0001)",
-              subtitle: "Barang berhasil diambil dari lokasi pela...",
-              time: "14:32",
-              showDot: true,
-            ),
-            NotificationCard(
-              icon: Icons.close_rounded,
-              iconBgColor: Color(0xFFFFEAEA),
-              iconColor: Color(0xFFEB4335),
-              title: "Gagal Menyimpan Data (PU0001)",
-              subtitle: "Data terbaru tidak dapat disimpan. Peri...",
-              time: "14:32",
-              showDot: true,
-            ),
-          ],
+          itemCount: notifications.length,
+          itemBuilder: (context, index) {
+            final item = notifications[index];
+            return NotificationCard(
+              icon: _resolveIcon(item),
+              iconBgColor: _resolveIconBg(item),
+              iconColor: _resolveIconColor(item),
+              title: item.title,
+              subtitle: item.shortDesc,
+              time: _formatTime(item.createdAt.toIso8601String()),
+              showDot: item.isRead == false,
+            );
+          },
         ),
       ),
     );
+  }
+
+  IconData _resolveIcon(NotificationModel item) {
+    if (item.title.toLowerCase().contains("gagal")) {
+      return Icons.close_rounded;
+    } else if (item.title.toLowerCase().contains("selesai")) {
+      return Icons.check_circle;
+    } else {
+      return Icons.info;
+    }
+  }
+
+  Color _resolveIconBg(NotificationModel item) {
+    if (item.title.toLowerCase().contains("gagal")) {
+      return const Color(0xFFFFEAEA);
+    } else if (item.title.toLowerCase().contains("selesai")) {
+      return const Color(0xFFE9FBEF);
+    } else {
+      return const Color(0xFFE8F2FF);
+    }
+  }
+
+  Color _resolveIconColor(NotificationModel item) {
+    if (item.title.toLowerCase().contains("gagal")) {
+      return const Color(0xFFEB4335);
+    } else if (item.title.toLowerCase().contains("selesai")) {
+      return const Color(0xFF2DB566);
+    } else {
+      return const Color(0xFF007BFF);
+    }
+  }
+
+  String _formatTime(String? createdAt) {
+    if (createdAt == null) return "-";
+
+    final date = DateTime.tryParse(createdAt);
+    if (date == null) return "-";
+
+    return "${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
   }
 }

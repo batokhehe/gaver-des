@@ -17,7 +17,7 @@ extension DeliveryMapper on DeliveryModel {
       receiverSign: receiverSign,
       proof: proof,
       businessPartnerId: businessPartnerId,
-      pickupMapsOption: pickupMapsOption,
+      deliveryMapsOption: deliveryMapsOption,
       items: items
           .map(
             (e) => ItemEntity(

@@ -184,7 +184,7 @@ class _DeliveryPageState extends ConsumerState<DeliveryPage> {
       isShowBottomNext: false,
       isHistory: false,
       isPickUp: false,
-      mapsLink: detail.pickupMapsOption,
+      mapsLink: detail.deliveryMapsOption,
     );
   }
 

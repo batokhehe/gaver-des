@@ -297,7 +297,7 @@ class _DeliveryFormPageState extends ConsumerState<DeliveryFormPage> {
       isShowBottomNext: false,
       isHistory: false,
       isPickUp: true,
-      mapsLink: detail.pickupMapsOption,
+      mapsLink: detail.deliveryMapsOption,
     );
   }
 
