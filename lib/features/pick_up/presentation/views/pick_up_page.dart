@@ -184,6 +184,7 @@ class _PickUpPageState extends ConsumerState<PickUpPage> {
       isShowBottomNext: false,
       isHistory: false,
       isPickUp: true,
+      mapsLink: detail.pickupMapsOption,
     );
   }
 

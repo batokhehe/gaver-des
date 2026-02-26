@@ -8,7 +8,7 @@ class TaskEntity {
   final String address;
   final String addressName;
   final DateTime pickupDate;
-  final String? pickupMapsOption;
+  final String? mapsOption;
 
   TaskEntity({
     required this.id,
@@ -20,6 +20,6 @@ class TaskEntity {
     required this.address,
     required this.addressName,
     required this.pickupDate,
-    this.pickupMapsOption,
+    this.mapsOption,
   });
 }

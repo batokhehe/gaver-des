@@ -1,17 +1,87 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/features/auth/presentation/views/forgot_password_bottom_sheet.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/network/dio_client.dart'; // pastikan ini sesuai path dioProvider kamu
 import '../../../../core/theme/app_colors.dart';
 
-class ForgotPasswordView extends StatefulWidget {
+class ForgotPasswordView extends ConsumerStatefulWidget {
   const ForgotPasswordView({super.key});
 
   @override
-  State<ForgotPasswordView> createState() => _ForgotPasswordViewState();
+  ConsumerState<ForgotPasswordView> createState() => _ForgotPasswordViewState();
 }
 
-class _ForgotPasswordViewState extends State<ForgotPasswordView> {
+class _ForgotPasswordViewState extends ConsumerState<ForgotPasswordView> {
   final _email = TextEditingController();
+
+  bool _isLoading = false;
+  bool _isValidEmail = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _email.addListener(_validateEmailLive);
+  }
+
+  void _validateEmailLive() {
+    final email = _email.text.trim();
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+
+    setState(() {
+      _isValidEmail = emailRegex.hasMatch(email);
+    });
+  }
+
+  @override
+  void dispose() {
+    _email.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final dio = ref.read(dioProvider);
+
+      await dio.post(
+        "/auth/forgot-password",
+        data: {"email": _email.text.trim()},
+      );
+
+      if (!mounted) return;
+
+      final result = await _showBottomDialog(context);
+
+      if (!mounted) return;
+
+      if (result == true) {
+        await Future.delayed(const Duration(milliseconds: 200));
+        context.go('/login');
+      }
+    } on DioException catch (e) {
+      String message = "Terjadi kesalahan";
+
+      if (e.response != null) {
+        message = e.response?.data["message"] ?? "Email tidak ditemukan";
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Terjadi kesalahan jaringan")),
+      );
+    }
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +95,6 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           ],
         ),
       ),
-
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         color: Colors.white,
@@ -34,22 +103,24 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           height: 50,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD9541E),
+              backgroundColor: _isValidEmail
+                  ? const Color(0xFFD9541E)
+                  : Colors.grey,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            onPressed: () {
-              _showBottomDialog(context);
-            },
-            child: const Text(
-              "Selanjutnya",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
+            onPressed: (!_isValidEmail || _isLoading) ? null : _submit,
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text(
+                    "Selanjutnya",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
           ),
         ),
       ),
@@ -70,7 +141,6 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
             ),
           ),
         ),
-
         Container(
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(16, 54, 16, 0),
@@ -80,8 +150,8 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 onTap: () => Navigator.pop(context),
                 child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-              SizedBox(width: 12),
-              Text(
+              const SizedBox(width: 12),
+              const Text(
                 "Lupa Sandi",
                 style: TextStyle(
                   color: Colors.white,
@@ -109,7 +179,6 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
             topRight: Radius.circular(16),
           ),
         ),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -118,8 +187,6 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
             ),
             const SizedBox(height: 8),
-
-            // FIELD TEXT
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -145,8 +212,8 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     );
   }
 
-  void _showBottomDialog(BuildContext context) {
-    showModalBottomSheet(
+  Future<bool?> _showBottomDialog(BuildContext context) {
+    return showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,

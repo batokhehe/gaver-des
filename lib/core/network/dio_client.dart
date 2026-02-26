@@ -9,8 +9,8 @@ final dioProvider = Provider<Dio>((ref) {
     BaseOptions(
       // baseUrl: "https://api.gaver.seavihive.com/api",
       baseUrl: "http://72.61.214.163:8018/api",
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 5),
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
     ),
   );
   dio.interceptors.add(

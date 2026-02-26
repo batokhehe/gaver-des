@@ -14,6 +14,7 @@ class PickUpEntity {
   final String proof;
   final List<ItemEntity> items;
   final int businessPartnerId;
+  final String pickupMapsOption;
 
   const PickUpEntity({
     required this.id,
@@ -29,5 +30,6 @@ class PickUpEntity {
     required this.receiverSign,
     required this.proof,
     required this.businessPartnerId,
+    required this.pickupMapsOption,
   });
 }

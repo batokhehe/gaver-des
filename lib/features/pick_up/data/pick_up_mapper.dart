@@ -18,6 +18,7 @@ extension PickupMapper on PickupModel {
       receiverSign: receiverSign,
       proof: proof,
       businessPartnerId: businessPartnerId,
+      pickupMapsOption: pickupMapsOption,
       items: items
           .map(
             (e) => ItemEntity(

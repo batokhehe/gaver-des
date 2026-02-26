@@ -130,7 +130,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                               vendor: t.vendor,
                               address: t.address,
                               addressName: t.addressName,
-                              mapsLink: t.pickupMapsOption,
+                              mapsLink: t.mapsOption,
                               isShowBottomNext: true,
                               isHistory: true,
                               isPickUp: filter == TaskFilter.pickup,

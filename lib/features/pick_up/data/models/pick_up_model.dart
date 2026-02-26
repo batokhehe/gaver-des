@@ -13,6 +13,7 @@ class PickupModel {
   final String receiverSign;
   final String proof;
   final int businessPartnerId;
+  final String pickupMapsOption;
   final List<ItemModel> items;
 
   PickupModel({
@@ -29,6 +30,7 @@ class PickupModel {
     required this.receiverSign,
     required this.proof,
     required this.businessPartnerId,
+    required this.pickupMapsOption,
   });
 
   factory PickupModel.fromJson(Map<String, dynamic> json) {
@@ -45,6 +47,7 @@ class PickupModel {
       address: json['pickupAddressOption'] ?? '-',
       addressName: json['pickupAddressName'] ?? '-',
       businessPartnerId: json['businessPartnerId'] ?? 0,
+      pickupMapsOption: json['pickupMapsOption'] ?? "",
       items: (json['items'] as List)
           .map((e) => ItemModel.fromJson(e))
           .toList(),

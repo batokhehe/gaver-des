@@ -306,6 +306,7 @@ class _PickUpFormPageState extends ConsumerState<PickUpFormPage> {
       isShowBottomNext: false,
       isHistory: false,
       isPickUp: true,
+      mapsLink: detail.pickupMapsOption,
     );
   }
 

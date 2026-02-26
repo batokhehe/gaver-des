@@ -14,6 +14,7 @@ class DeliveryEntity {
   final String proof;
   final List<ItemEntity> items;
   final int businessPartnerId;
+  final String pickupMapsOption;
 
   const DeliveryEntity({
     required this.id,
@@ -29,5 +30,6 @@ class DeliveryEntity {
     required this.receiverSign,
     required this.proof,
     required this.businessPartnerId,
+    required this.pickupMapsOption,
   });
 }

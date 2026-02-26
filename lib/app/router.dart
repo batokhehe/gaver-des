@@ -9,6 +9,7 @@ import 'package:gaver_des/features/pick_up/presentation/views/pick_up_form_page.
 import 'package:gaver_des/features/pick_up/presentation/views/pick_up_page.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/presentation/views/forgot_password_view.dart';
 import '../features/auth/presentation/views/login_page.dart';
 import '../features/delivery/presentation/views/camera_capture_page.dart';
 import '../features/delivery/presentation/views/delivery_form_page.dart';
@@ -71,17 +72,19 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final atSplash = state.matchedLocation == "/splash";
       final atLogin = state.matchedLocation == "/login";
+      final atForgot = state.matchedLocation == "/forgot-password";
 
       // 1️⃣ Selama splash belum selesai → tahan di splash
       if (!hasShownSplash) {
         return atSplash ? null : "/splash";
       }
 
-      // 2️⃣ Setelah splash selesai, authState HARUS sudah ada
-      if (authState == false && !atLogin) {
+      // 2️⃣ Kalau belum login → boleh di login & forgot password
+      if (authState == false && !(atLogin || atForgot)) {
         return "/login";
       }
 
+      // 3️⃣ Kalau sudah login → jangan balik ke login
       if (authState == true && (atSplash || atLogin)) {
         return "/home";
       }
@@ -92,6 +95,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: "/splash", builder: (_, __) => const SplashPage()),
       GoRoute(path: "/login", builder: (_, __) => const LoginPage()),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordView(),
+      ),
       GoRoute(
         path: "/home",
         builder: (context, state) {

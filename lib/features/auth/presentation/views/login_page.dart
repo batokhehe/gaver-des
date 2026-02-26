@@ -190,12 +190,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ForgotPasswordView(),
-                          ),
-                        );
+                        context.push('/forgot-password');
                       },
                       child: const Text(
                         "Lupa Sandi",

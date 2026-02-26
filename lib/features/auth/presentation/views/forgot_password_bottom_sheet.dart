@@ -24,7 +24,7 @@ class ForgotPasswordBottomSheet extends StatelessWidget {
               ),
 
               GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: () => Navigator.pop(context, true),
                 child: const Icon(Icons.close, size: 24),
               ),
             ],

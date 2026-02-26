@@ -11,7 +11,7 @@ class TaskModel extends TaskEntity {
     required super.address,
     required super.addressName,
     required super.pickupDate,
-    super.pickupMapsOption,
+    super.mapsOption,
   });
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
@@ -25,7 +25,7 @@ class TaskModel extends TaskEntity {
       address: json['pickupAddressOption'] ?? json['deliveryAddress'] ?? '-',
       addressName:
           json['pickupAddressName'] ?? json['deliveryAddressName'] ?? '-',
-      pickupMapsOption: json['pickupMapsOption'],
+      mapsOption: json['pickupMapsOption'] ?? json['deliveryMapsOption'],
       pickupDate: json['pickupDate'] != null
           ? DateTime.parse(json['pickupDate'])
           : DateTime.now(),
