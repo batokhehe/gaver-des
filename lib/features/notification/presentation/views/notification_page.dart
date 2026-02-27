@@ -26,11 +26,23 @@ class NotificationPage extends ConsumerWidget {
                   Center(child: Text("Terjadi kesalahan: $err")),
               data: (response) {
                 final notifications = response.data;
+
                 if (notifications.isEmpty) {
-                  return const Center(child: Text("Belum ada notifikasi"));
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      ref.refresh(notificationResponseProvider);
+                    },
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(height: 200),
+                        Center(child: Text("Belum ada notifikasi")),
+                      ],
+                    ),
+                  );
                 }
 
-                return _buildNotificationList(notifications);
+                return _buildNotificationList(ref, notifications);
               },
             ),
           ),
@@ -90,7 +102,10 @@ class NotificationPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildNotificationList(List<NotificationModel> notifications) {
+  Widget _buildNotificationList(
+    WidgetRef ref,
+    List<NotificationModel> notifications,
+  ) {
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -102,21 +117,27 @@ class NotificationPage extends ConsumerWidget {
             topRight: Radius.circular(16),
           ),
         ),
-        child: ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: notifications.length,
-          itemBuilder: (context, index) {
-            final item = notifications[index];
-            return NotificationCard(
-              icon: _resolveIcon(item),
-              iconBgColor: _resolveIconBg(item),
-              iconColor: _resolveIconColor(item),
-              title: item.title,
-              subtitle: item.shortDesc,
-              time: _formatTime(item.createdAt.toIso8601String()),
-              showDot: item.isRead == false,
-            );
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.refresh(notificationResponseProvider);
           },
+          child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final item = notifications[index];
+              return NotificationCard(
+                icon: _resolveIcon(item),
+                iconBgColor: _resolveIconBg(item),
+                iconColor: _resolveIconColor(item),
+                title: item.title,
+                subtitle: item.shortDesc,
+                time: _formatTime(item.createdAt.toIso8601String()),
+                showDot: item.isRead == false,
+              );
+            },
+          ),
         ),
       ),
     );
