@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaver_des/core/service/device_id_service.dart';
 
+import '../../../app/router.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/service/push_notification_service.dart';
 import '../../user/providers/user_provider.dart';
 import '../data/auth_api.dart';
 import '../data/auth_repository.dart';
+import '../domain/change_password_usecase.dart';
 import '../domain/login_usecase.dart';
+import 'change_password_viewmodel.dart';
 import 'login_viewmodel.dart';
 
 final authApiProvider = Provider<AuthApi>((ref) {
@@ -17,9 +20,12 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(ref.read(authApiProvider), ref);
 });
 
-final pushNotificationServiceProvider = Provider<PushNotificationService>(
-  (ref) => PushNotificationService(),
-);
+final pushNotificationServiceProvider = Provider<PushNotificationService>((
+  ref,
+) {
+  final router = ref.read(routerProvider);
+  return PushNotificationService(router);
+});
 
 final deviceIdServiceProvider = Provider<DeviceIdService>(
   (ref) => DeviceIdService(),
@@ -62,3 +68,13 @@ class AuthNotifier extends StateNotifier<bool?> {
     state = false;
   }
 }
+
+final changePasswordUseCaseProvider = Provider<ChangePasswordUseCase>((ref) {
+  return ChangePasswordUseCase(ref.read(authRepositoryProvider));
+});
+
+final changePasswordViewModelProvider =
+    StateNotifierProvider<ChangePasswordViewModel, AsyncValue<void>>((ref) {
+      final useCase = ref.watch(changePasswordUseCaseProvider);
+      return ChangePasswordViewModel(useCase);
+    });

@@ -61,4 +61,23 @@ class AuthRepository {
     // hapus user (model lengkap)
     await ref.read(userRepositoryProvider).clearUser();
   }
+
+  /// ---------------- CHANGE PASSWORD ----------------
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      await api.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+
+      return true;
+    } catch (e) {
+      throw ErrorParser.parse(e);
+    }
+  }
 }

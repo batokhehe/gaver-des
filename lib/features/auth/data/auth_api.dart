@@ -5,7 +5,12 @@ class AuthApi {
 
   AuthApi(this.dio);
 
-  Future<Map<String, dynamic>?> login(String email, String pass, String? fcmToken, String deviceId) async {
+  Future<Map<String, dynamic>?> login(
+    String email,
+    String pass,
+    String? fcmToken,
+    String deviceId,
+  ) async {
     final response = await dio.post(
       '/auth/login',
       data: {
@@ -14,6 +19,23 @@ class AuthApi {
         "platform": "mobile",
         "fcmToken": fcmToken,
         "deviceId": deviceId,
+      },
+    );
+
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>?> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    final response = await dio.post(
+      '/auth/changepassword',
+      data: {
+        "currentPassword": currentPassword,
+        "newPassword": newPassword,
+        "confirmPassword": confirmPassword,
       },
     );
 
