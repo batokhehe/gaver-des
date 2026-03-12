@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 class PushNotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final GoRouter _router;
+  RemoteMessage? _pendingMessage;
 
   PushNotificationService(this._router);
 
@@ -40,7 +41,7 @@ class PushNotificationService {
     final initialMessage = await _messaging.getInitialMessage();
     if (initialMessage != null) {
       debugPrint("🚀 Notif diklik (terminated)");
-      _handleNavigation(initialMessage);
+      _pendingMessage = initialMessage;
     }
   }
 
@@ -55,17 +56,31 @@ class PushNotificationService {
       final id = message.data['id'];
       final history = message.data['history'];
 
-      _router.go('/pickup-detail/$id?history=$history');
+      Future.microtask(() {
+        _router.go('/home'); // reset stack
+        _router.push('/pickup-detail/$id?history=$history');
+      });
     }
+
     if (type == 'delivery') {
       final id = message.data['id'];
       final history = message.data['history'];
 
-      _router.go('/delivery-detail/$id?history=$history');
+      Future.microtask(() {
+        _router.go('/home');
+        _router.push('/delivery-detail/$id?history=$history');
+      });
     }
   }
 
   Future<String?> getToken() async {
     return await _messaging.getToken();
+  }
+
+  void handlePendingNavigation() {
+    if (_pendingMessage != null) {
+      _handleNavigation(_pendingMessage!);
+      _pendingMessage = null;
+    }
   }
 }

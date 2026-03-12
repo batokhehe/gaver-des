@@ -28,15 +28,20 @@ class _SplashPageState extends ConsumerState<SplashPage>
     final loggedIn = await repo.isLoggedIn();
 
     if (!mounted) return;
-    ref.read(authStateProvider.notifier).state = loggedIn;
+    ref
+        .read(authStateProvider.notifier)
+        .state = loggedIn;
 
-    // ⬇️ PENTING: beri 1 frame
     await Future.delayed(Duration.zero);
 
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
-    ref.read(hasShownSplashProvider.notifier).state = true;
+
+    ref
+        .read(hasShownSplashProvider.notifier)
+        .state = true;
+    ref.read(pushNotificationServiceProvider).handlePendingNavigation();
   }
 
   @override
